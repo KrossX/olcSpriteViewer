@@ -329,6 +329,8 @@ void draw_segment(struct olc_sprite *sprite)
 
 void draw_sprite(struct olc_sprite *sprite)
 {
+	int x, y;
+	
 	float x1 = offx;
 	float y1 = offy;
 	float x2 = x1 + sprite->width * scale;
@@ -337,6 +339,7 @@ void draw_sprite(struct olc_sprite *sprite)
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
 	glBindTexture(GL_TEXTURE_2D, sprite_texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, scale > 24.0f ? GL_NEAREST : GL_LINEAR);
 	
 	glBegin(GL_TRIANGLE_STRIP);
 		glColor3f(1.0f, 1.0f, 1.0f);
@@ -346,8 +349,39 @@ void draw_sprite(struct olc_sprite *sprite)
 		glTexCoord2f(1.0f, 1.0f); glVertex2f(x2, y2);
 	glEnd();
 	
-	glDisable(GL_BLEND);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glDisable(GL_TEXTURE_2D);
+	
+	if(scale > 16.0f)
+	{
+		float alpha = scale < 32.0f ? (scale - 16.0f) / 16.0f : 1.0f;
+
+		glBegin(GL_LINES);
+			glColor4f(0.1f, 0.1f, 0.1f, alpha);
+			
+			for(y = 0; y < sprite->height; y++)
+			{
+				float posy = y * scale + offy;
+				float posx1 = offx;
+				float posx2 = offx + sprite->width * scale;
+				
+				glVertex2f(posx1, posy);
+				glVertex2f(posx2, posy);
+			}				
+			
+			for(x = 0; x < sprite->width; x++)
+			{
+				float posx = x * scale + offx;
+				float posy1 = offy;
+				float posy2 = offy + sprite->height * scale;
+				
+				glVertex2f(posx, posy1);
+				glVertex2f(posx, posy2);
+			}
+		glEnd();
+	}
+	
+	glDisable(GL_BLEND);
 	
 	glBegin(GL_LINE_STRIP);
 		glColor3f(0.2f, 0.2f, 0.2f);
