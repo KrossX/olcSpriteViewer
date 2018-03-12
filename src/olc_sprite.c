@@ -354,7 +354,7 @@ void draw_sprite(struct olc_sprite *sprite)
 	
 	if(scale > 16.0f)
 	{
-		float alpha = scale < 32.0f ? (scale - 16.0f) / 16.0f : 1.0f;
+		float alpha = scale < 32.0f ? (scale - 16.0f) / 64.0f : 0.25f;
 
 		glBegin(GL_LINES);
 			glColor4f(0.1f, 0.1f, 0.1f, alpha);
