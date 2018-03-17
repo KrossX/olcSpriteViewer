@@ -37,32 +37,53 @@ struct olc_sprite
 	BOOL loaded;
 };
 
+struct olc_pixel
+{
+	WCHAR id;
+	WORD col;
+	u32 fg, bg;
+
+	int u, v;
+	float u1, v1;
+	float u2, v2;
+};
+
+void get_pixel_data(struct olc_sprite *sprite, int pos, struct olc_pixel *pix)
+{
+	pix->id  = sprite->glyph[pos];
+	pix->col = sprite->colour[pos];
+	
+	pix->fg = colour_palette[pix->col & 0xF];
+	pix->bg = colour_palette[(pix->col>>4) & 0xF];
+	
+	set_char_pos(pix->id, &pix->u, &pix->v);
+	
+	pix->u1 = pix->u / 256.0f;
+	pix->v1 = pix->v / 256.0f;
+	pix->u2 = (pix->u + 8) / 256.0f;
+	pix->v2 = (pix->v + 8) / 256.0f;
+}
+
 void gen_sprite_texture(struct olc_sprite *sprite)
 {
+	struct olc_pixel pix;
 	int x, y, px, py;
-	
+
 	u32 *tex = sprite->tex;
 	
 	for(y = 0; y < sprite->height; y++)
 	for(x = 0; x < sprite->width; x++)
 	{
 		int pos = y * sprite->width + x;
-		
-		int id = sprite->glyph[pos];
-		u32 COL = sprite->colour[pos];
-		u32 FG = colour_palette[COL & 0xF];
-		u32 BG = colour_palette[(COL>>4) & 0xF];
-		
-		int u, v;
-		set_char_pos(id, &u, &v);
-		
+		get_pixel_data(sprite, pos, &pix);
+
 		for(py = 0; py < 8; py++)
 		for(px = 0; px < 8; px++)
 		{
 			int ppos = (y * 8 + py) * (sprite->width * 8) + (x * 8 + px);
-			int tpos = (v + py) * 256 + (u + px);
+			int tpos = (pix.v + py) * 256 + (pix.u + px);
 			
-			tex[ppos] = id == ' ' ? 0 : font_8x8_256x256[tpos] ? FG : BG;
+			tex[ppos] = pix.id == ' ' ? 0 : font_8x8_256x256[tpos] ? pix.fg : pix.bg;
 		}
 	}
 }
@@ -144,6 +165,8 @@ void draw_text(float x, float y, char *text)
 	float x2 = x + 8.0f;
 	float y2 = y;
 	
+	glBindTexture(GL_TEXTURE_2D, font_texture);
+
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_ALPHA_TEST);
 	
@@ -188,6 +211,8 @@ void draw_infobar(struct olc_sprite *sprite)
 	x2 = (float)(wnd_width);
 	y2 = (float)(wnd_height);
 	
+	glBindTexture(GL_TEXTURE_2D, font_texture);
+	
 	glEnable(GL_BLEND);
 	glBegin(GL_TRIANGLE_STRIP);
 		glColor4f(0, 0, 0, 0.8f);
@@ -204,66 +229,55 @@ void draw_infobar(struct olc_sprite *sprite)
 	if(charx >= 0 && charx < sprite->width &&
 		chary >= 0 && chary < sprite->height)
 	{
-		int u, v;
-		float u1, v1, u2, v2;
+		struct olc_pixel pix;
 		
 		int pos = chary * sprite->width + charx;
-		int id  = sprite->glyph[pos];
-		int COL = sprite->colour[pos];
-		u32 BG  = colour_palette[(COL >> 4) & 0xF];
-		u32 FG  = colour_palette[COL&0xF];
+		get_pixel_data(sprite, pos, &pix);
 		
 		x1 = 2.0f;
 		y1 = (float)(wnd_height - 18);
 		x2 = x1 + 16.0f;
 		y2 = y1 + 16.0f;
 		
-		set_char_pos(id, &u, &v);
-		
-		u1 = u / 256.0f;
-		v1 = v / 256.0f;
-		u2 = (u + 8) / 256.0f;
-		v2 = (v + 8) / 256.0f;
-
 		glEnable(GL_TEXTURE_2D);
 		glBegin(GL_TRIANGLE_STRIP);
 			glColor3f(1, 1, 1);
-			glTexCoord2f(u1, v1); glVertex2f(x1, y1);
-			glTexCoord2f(u2, v1); glVertex2f(x2, y1);
-			glTexCoord2f(u1, v2); glVertex2f(x1, y2);
-			glTexCoord2f(u2, v2); glVertex2f(x2, y2);
+			glTexCoord2f(pix.u1, pix.v1); glVertex2f(x1, y1);
+			glTexCoord2f(pix.u2, pix.v1); glVertex2f(x2, y1);
+			glTexCoord2f(pix.u1, pix.v2); glVertex2f(x1, y2);
+			glTexCoord2f(pix.u2, pix.v2); glVertex2f(x2, y2);
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
 		
-		wsprintf(text, "0x%04X  BG:", id);
+		wsprintf(text, "0x%04X  BG:", pix.id);
 		draw_text(x2 + 4.0f, (float)wnd_height - 6.0f, text);
 		
 		x1 += 13.5f * 8.0f;
 		x2 += 13.5f * 8.0f;
 		
 		glBegin(GL_TRIANGLE_STRIP);
-			glColor4ubv((u8*)&BG);
+			glColor4ubv((u8*)&pix.bg);
 			glVertex2f(x1, y1);
 			glVertex2f(x2, y1);
 			glVertex2f(x1, y2);
 			glVertex2f(x2, y2);
 		glEnd();
 		
-		wsprintf(text, "0x%X (%06X)  FG:", (COL >> 4) & 0xF, BG & 0xFFFFFF);
+		wsprintf(text, "0x%X (%06X)  FG:", (pix.col >> 4) & 0xF, pix.bg & 0xFFFFFF);
 		draw_text(x2 + 4.0f, (float)wnd_height - 6.0f, text);
 		
 		x1 += 19.5f * 8.0f;
 		x2 += 19.5f * 8.0f;
 		
 		glBegin(GL_TRIANGLE_STRIP);
-			glColor4ubv((u8*)&FG);
+			glColor4ubv((u8*)&pix.fg);
 			glVertex2f(x1, y1);
 			glVertex2f(x2, y1);
 			glVertex2f(x1, y2);
 			glVertex2f(x2, y2);
 		glEnd();
 		
-		wsprintf(text, "0x%X (%06X)", COL&0xF, FG & 0xFFFFFF);
+		wsprintf(text, "0x%X (%06X)", pix.col&0xF, pix.fg & 0xFFFFFF);
 		draw_text(x2 + 4.0f, (float)wnd_height - 6.0f, text);
 	}
 	
@@ -391,9 +405,106 @@ void draw_sprite(struct olc_sprite *sprite)
 		glVertex2f(x1, y2);
 		glVertex2f(x1, y1);
 	glEnd();
+}
+
+void draw_editor(struct olc_pixel *pix)
+{
+	float x1 = 0;
+	float y1 = 0;
+	float x2 = wnd_width * 0.5f;
+	float y2 = 10.0f;
 	
-	draw_segment(sprite);
+	glEnable(GL_BLEND);
+	glBegin(GL_TRIANGLE_STRIP);
+		glColor4f(1, 0, 0, 1); glVertex2f(x1, y1);
+		glColor4f(1, 0, 0, 0); glVertex2f(x2, y1);
+		glColor4f(1, 0, 0, 1); glVertex2f(x1, y2);
+		glColor4f(1, 0, 0, 0); glVertex2f(x2, y2);
+	glEnd();
+	
+	x1 = 0;
+	y1 = 10.0f;
+	x2 = x1 + 40.0f;
+	y2 = y1 + 40.0f;
+	
+	glBegin(GL_TRIANGLE_STRIP);
+		glColor4f(0, 0, 0, 0.8f);
+		glVertex2f(x1, y1);
+		glVertex2f(x2, y1);
+		glVertex2f(x1, y2);
+		glVertex2f(x2, y2);
+	glEnd();
+
+	glDisable(GL_BLEND);
+	
+	x1 = 4;
+	y1 = 14.0f;
+	x2 = x1 + 32.0f;
+	y2 = y1 + 32.0f;
+	
+	glBegin(GL_TRIANGLE_STRIP);
+		glColor4ubv((u8*)&pix->bg);
+		glVertex2f(x1, y1);
+		glVertex2f(x2, y1);
+		glVertex2f(x1, y2);
+		glVertex2f(x2, y2);
+	glEnd();
 	
 	glBindTexture(GL_TEXTURE_2D, font_texture);
-	draw_infobar(sprite);
+	
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_ALPHA_TEST);
+	glBegin(GL_TRIANGLE_STRIP);
+		glColor4ubv((u8*)&pix->fg);
+		glTexCoord2f(pix->u1, pix->v1); glVertex2f(x1, y1);
+		glTexCoord2f(pix->u2, pix->v1); glVertex2f(x2, y1);
+		glTexCoord2f(pix->u1, pix->v2); glVertex2f(x1, y2);
+		glTexCoord2f(pix->u2, pix->v2); glVertex2f(x2, y2);
+	glEnd();
+	glDisable(GL_ALPHA_TEST);
+	glDisable(GL_TEXTURE_2D);
+	
+	glColor3f(1.0f, 1.0f, 1.0f);
+	draw_text(1.0f, 9.0f, "EDIT");
+}
+
+
+void get_pixel(struct olc_sprite *sprite, struct olc_pixel *pix)
+{
+	int charx = (int)((mouse_x - offx) / scale);
+	int chary = (int)((mouse_y - offy) / scale);
+	
+	if(charx >= 0 && charx < sprite->width &&
+		chary >= 0 && chary < sprite->height)
+	{
+		int pos = chary * sprite->width + charx;
+		get_pixel_data(sprite, pos, pix);
+	}
+}
+
+void set_pixel(struct olc_sprite *sprite, struct olc_pixel *pix)
+{
+	int charx = (int)((mouse_x - offx) / scale);
+	int chary = (int)((mouse_y - offy) / scale);
+	
+	u32 *tex = sprite->tex;
+	
+	if(charx >= 0 && charx < sprite->width &&
+		chary >= 0 && chary < sprite->height)
+	{
+		int px, py;
+		int pos = chary * sprite->width + charx;
+		
+		sprite->glyph[pos] = pix->id;
+		sprite->colour[pos] = pix->col;
+
+		for(py = 0; py < 8; py++)
+		for(px = 0; px < 8; px++)
+		{
+			int ppos = (chary * 8 + py) * (sprite->width * 8) + (charx * 8 + px);
+			int tpos = (pix->v + py) * 256 + (pix->u + px);
+			
+			tex[ppos] = pix->id == ' ' ? 0 : font_8x8_256x256[tpos] ? pix->fg : pix->bg;
+		}
+	}
 }

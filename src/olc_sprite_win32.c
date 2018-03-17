@@ -45,6 +45,9 @@ int mouse_dx, mouse_dy;
 int wnd_width;
 int wnd_height;
 
+int edit_mode;
+int file_changed;
+
 float dt_ms;
 float offx, offy, scale = 8.0f;
 float prevx, prevy;
@@ -56,6 +59,7 @@ GLuint font_texture, sprite_texture;
 #include "olc_sprite.c"
 
 struct olc_sprite main_sprite;
+struct olc_pixel edit_pixel;
 
 char **file_list;
 size_t file_list_count;
@@ -379,14 +383,12 @@ void toggle_fullscreen(HWND wnd)
 		
 		if(GetWindowPlacement(wnd, &prev))
 		{
-			ShowCursor(FALSE);
 			SetWindowLong(wnd, GWL_STYLE, style & ~WS_OVERLAPPEDWINDOW);
-			SetWindowPos(wnd, HWND_TOP, 0, 0, width, height, SWP_NOOWNERZORDER | SWP_FRAMECHANGED);				
+			SetWindowPos(wnd, HWND_TOP, 0, 0, width, height, SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
 		}
 	}
 	else
 	{
-		ShowCursor(TRUE);
 		SetWindowLong(wnd, GWL_STYLE, style | WS_OVERLAPPEDWINDOW);
 		SetWindowPlacement(wnd, &prev);
 		SetWindowPos(wnd, NULL, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
@@ -458,6 +460,7 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 				case VK_RIGHT: change_preview( 1.0f, 0.0f); break;
 				case VK_UP: change_preview(0.0f, -1.0f); break;
 				case VK_DOWN: change_preview(0.0f, 1.0f); break;
+				case VK_TAB: edit_mode ^= 1;
 			}
 			
 			keyboard[wparam] = 1;
@@ -465,6 +468,21 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 			
 		case WM_KEYUP:
 			keyboard[wparam] = 0;
+			return 0;
+			
+		case WM_LBUTTONDOWN:
+			if(edit_mode && !keyboard[VK_SPACE])
+			{
+				if(wparam & MK_CONTROL)
+				{
+					get_pixel(&main_sprite, &edit_pixel);
+				}
+				else
+				{
+					set_pixel(&main_sprite, &edit_pixel);
+					update_sprite_texture();
+				}
+			}
 			return 0;
 			
 		case WM_MOUSEWHEEL:
@@ -478,7 +496,15 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 			mouse_x  = LOWORD(lparam);
 			mouse_y  = HIWORD(lparam);
 			
-			if(wparam & MK_LBUTTON)
+			if(edit_mode)
+			{
+				if((wparam & MK_LBUTTON) && keyboard[VK_SPACE] || (wparam & MK_MBUTTON))
+				{
+					offx += mouse_dx;
+					offy += mouse_dy;
+				}
+			}
+			else if(wparam & MK_LBUTTON)
 			{
 				offx += mouse_dx;
 				offy += mouse_dy;
@@ -630,7 +656,16 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, char *cmdline, int cmdshow)
 		}
 		
 		if(main_sprite.loaded)
+		{
 			draw_sprite(&main_sprite);
+			draw_segment(&main_sprite);
+			draw_infobar(&main_sprite);
+		}
+		
+		if(edit_mode)
+		{
+			draw_editor(&edit_pixel);
+		}
 		
 		SwapBuffers(dev_ctx);
 	}
