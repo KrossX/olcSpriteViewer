@@ -46,7 +46,6 @@ int wnd_width;
 int wnd_height;
 
 int edit_mode;
-int file_changed;
 
 float dt_ms;
 float offx, offy, scale = 8.0f;
@@ -201,7 +200,11 @@ void reset_zoom_pos(void)
 
 void next_file(HWND wnd)
 {
-	if(!file_list_count) return;
+	if(!file_list_count)
+		return;
+	
+	if(!save_check_msg(&main_sprite, file_list[file_list_index]))
+		return;
 	
 	file_list_index++;
 	if(file_list_index >= file_list_count) file_list_index = 0;
@@ -215,6 +218,9 @@ void next_file(HWND wnd)
 void prev_file(HWND wnd)
 {
 	if(!file_list_count) return;
+	
+	if(!save_check_msg(&main_sprite, file_list[file_list_index]))
+		return;
 	
 	if(file_list_index == 0) file_list_index = file_list_count - 1;
 	else file_list_index--;
@@ -460,7 +466,8 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 				case VK_RIGHT: change_preview( 1.0f, 0.0f); break;
 				case VK_UP: change_preview(0.0f, -1.0f); break;
 				case VK_DOWN: change_preview(0.0f, 1.0f); break;
-				case VK_TAB: edit_mode ^= 1;
+				case VK_TAB: edit_mode ^= 1; break;
+				case 'S': if(keyboard[VK_CONTROL]) save_sprite(&main_sprite, file_list[file_list_index]);  break;
 			}
 			
 			keyboard[wparam] = 1;
@@ -523,6 +530,12 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 				DragQueryFileA(drop, 0, filename, MAX_PATH);
 				DragFinish(drop);
+				
+				if(file_list_count)
+				{
+					if(!save_check_msg(&main_sprite, file_list[file_list_index]))
+						return 0;
+				}
 
 				load_directory(filename);
 
@@ -538,7 +551,8 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 			return 0;
 			
 		case WM_CLOSE:
-			DestroyWindow(wnd);
+			if(save_check_msg(&main_sprite, file_list[file_list_index]))
+				DestroyWindow(wnd);
 			return 0;
 			
 		case WM_DESTROY:

@@ -35,6 +35,8 @@ struct olc_sprite
 	void *tex;
 	
 	BOOL loaded;
+	BOOL need_backup;
+	BOOL changed;
 };
 
 struct olc_pixel
@@ -86,6 +88,63 @@ void gen_sprite_texture(struct olc_sprite *sprite)
 			tex[ppos] = pix.id == ' ' ? 0 : font_8x8_256x256[tpos] ? pix.fg : pix.bg;
 		}
 	}
+}
+
+int save_sprite(struct olc_sprite *sprite, char *filename)
+{
+	HANDLE file;
+	
+	if(!sprite->changed)
+		return 1;
+	
+	if(sprite->need_backup)
+	{
+		char backupname[MAX_PATH];
+		wsprintf(backupname, "%s.bak", filename);
+		
+		CopyFile(filename, backupname, FALSE);
+		sprite->need_backup = FALSE;
+	}
+	
+	file = CreateFile(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	
+	if(file != INVALID_HANDLE_VALUE)
+	{
+		
+		DWORD bytes_written;
+		DWORD section_bytes = sprite->width * sprite->height * 2;
+		
+		WriteFile(file, &sprite->width, 4, &bytes_written, NULL);
+		WriteFile(file, &sprite->height, 4, &bytes_written, NULL);
+		
+		WriteFile(file, sprite->colour, section_bytes, &bytes_written, NULL);
+		WriteFile(file, sprite->glyph, section_bytes, &bytes_written, NULL);
+			
+		sprite->changed = 0;
+	
+		CloseHandle(file);
+		return 1;
+	}
+
+	return 0;
+}
+
+int save_check_msg(struct olc_sprite *sprite, char *filename)
+{
+	if(sprite->changed)
+	{
+		int msgret;
+			
+		char message[512];
+		wsprintf(message, "Save changes to %s ?", filename);
+					
+		msgret = MessageBoxA(NULL, message, "olcSprite", MB_YESNOCANCEL);
+		
+		if(msgret == IDCANCEL) return 0;
+		if(msgret == IDYES) save_sprite(sprite, filename);
+	}
+
+	return 1;
 }
 
 void clear_sprite_data(struct olc_sprite *sprite)
@@ -142,7 +201,9 @@ int load_sprite(struct olc_sprite *sprite, char *filename)
 					ReadFile(file, sprite->colour, section_bytes, &bytes_read, NULL);
 					ReadFile(file, sprite->glyph,  section_bytes, &bytes_read, NULL);
 					gen_sprite_texture(sprite);
-					sprite->loaded = TRUE;
+					sprite->loaded      = TRUE;
+					sprite->need_backup = TRUE;
+					sprite->changed     = FALSE;	
 				}
 				else
 				{
@@ -506,5 +567,7 @@ void set_pixel(struct olc_sprite *sprite, struct olc_pixel *pix)
 			
 			tex[ppos] = pix->id == ' ' ? 0 : font_8x8_256x256[tpos] ? pix->fg : pix->bg;
 		}
+		
+		sprite->changed = TRUE;
 	}
 }
