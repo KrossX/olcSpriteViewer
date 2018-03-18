@@ -529,6 +529,121 @@ void draw_editor(struct olc_pixel *pix)
 	draw_text(1.0f, 9.0f, "EDIT");
 }
 
+void draw_editor_palette(struct olc_pixel *pix)
+{
+	int x;
+	
+	float x1 = (float)pal_l;
+	float y1 = (float)pal_t;
+	float x2 = (float)pal_r;
+	float y2 = (float)pal_b;
+	
+	glBegin(GL_TRIANGLE_STRIP);
+		glColor3f(0.3f, 0.3f, 0.3f);
+		glVertex2f(x1, y1);
+		glVertex2f(x2, y1);
+		glVertex2f(x1, y2);
+		glVertex2f(x2, y2);
+	glEnd();
+	
+	x1 = (float)pal_l + 1.0f;
+	y1 = (float)pal_t + 1.0f;
+	x2 = x1 + 15.0f;
+	y2 = y1 + 15.0f;
+	
+	for(x = 0; x < 16; x++)
+	{
+		glBegin(GL_TRIANGLE_STRIP);
+			glColor4ubv((u8*)&colour_palette[x]);
+			glVertex2f(x1, y1);
+			glVertex2f(x2, y1);
+			glVertex2f(x1, y2);
+			glVertex2f(x2, y2);
+		glEnd();
+		
+		x1 += 16.0f;
+		x2 += 16.0f;
+	}
+	
+	x1 = (float)pal_l + 1.0f;
+	y1 = (float)pal_t + 17.0f;
+	x2 = x1 + 15.0f;
+	y2 = y1 + 15.0f;
+	
+	for(x = 0; x < 16; x++)
+	{
+		glBegin(GL_TRIANGLE_STRIP);
+			glColor4ubv((u8*)&colour_palette[x]);
+			glVertex2f(x1, y1);
+			glVertex2f(x2, y1);
+			glVertex2f(x1, y2);
+			glVertex2f(x2, y2);
+		glEnd();
+		
+		x1 += 16.0f;
+		x2 += 16.0f;
+	}
+	
+	x1 = (float)pal_l + 1.0f;
+	y1 = (float)pal_t + 33.0f;
+	x2 = x1 + 256.0f;
+	y2 = y1 + 256.0f;
+	
+	glEnable(GL_TEXTURE_2D);
+	glBegin(GL_TRIANGLE_STRIP);
+		glColor3f(1, 1, 1);
+		glTexCoord2f(0, 0); glVertex2f(x1, y1);
+		glTexCoord2f(1, 0); glVertex2f(x2, y1);
+		glTexCoord2f(0, 1); glVertex2f(x1, y2);
+		glTexCoord2f(1, 1); glVertex2f(x2, y2);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+	
+	x1 = (float)pal_l + (pix->col & 0xF) * 16.0f;
+	y1 = (float)pal_t + 1.0f;
+	x2 = x1 + 16.0f;
+	y2 = y1 + 16.0f;
+	
+	glLineWidth(2.0f);
+	glBegin(GL_LINE_STRIP);
+		glColor3f(1.0f, 0.5f, 0.0f);
+		glVertex2f(x1, y1);
+		glVertex2f(x2, y1);
+		glVertex2f(x2, y2);
+		glVertex2f(x1, y2);
+		glVertex2f(x1, y1);
+	glEnd();
+	
+	x1 = (float)pal_l + ((pix->col >> 4) & 0xF) * 16.0f;
+	y1 = (float)pal_t + 17.0f;
+	x2 = x1 + 16.0f;
+	y2 = y1 + 16.0f;
+	
+	glBegin(GL_LINE_STRIP);
+		glColor3f(0.0f, 0.5f, 1.0f);
+		glVertex2f(x1, y1);
+		glVertex2f(x2, y1);
+		glVertex2f(x2, y2);
+		glVertex2f(x1, y2);
+		glVertex2f(x1, y1);
+	glEnd();
+	
+	x1 = (float)pal_l + pix->u - 1.0f;
+	y1 = (float)pal_t + 31.0f + pix->v;
+	x2 = x1 + 12.0f;
+	y2 = y1 + 12.0f;
+	
+	glBegin(GL_LINE_STRIP);
+		glColor3f(0.5f, 1.0f, 0.0f);
+		glVertex2f(x1, y1);
+		glVertex2f(x2, y1);
+		glVertex2f(x2, y2);
+		glVertex2f(x1, y2);
+		glVertex2f(x1, y1);
+	glEnd();
+	glLineWidth(1.0f);
+}
+
 
 void get_pixel(struct olc_sprite *sprite, struct olc_pixel *pix)
 {

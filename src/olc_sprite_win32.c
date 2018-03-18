@@ -51,6 +51,12 @@ int wnd_width;
 int wnd_height;
 
 int edit_mode;
+int edit_palette;
+
+int pal_l = 50;
+int pal_t = 60;
+int pal_r = 50 + 258;
+int pal_b = 60 + 290;
 
 float dt_ms;
 float offx, offy, scale = 8.0f;
@@ -471,7 +477,7 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 				case VK_RIGHT: change_preview( 1.0f, 0.0f); break;
 				case VK_UP: change_preview(0.0f, -1.0f); break;
 				case VK_DOWN: change_preview(0.0f, 1.0f); break;
-				case VK_TAB: edit_mode ^= 1; break;
+				case VK_TAB: edit_mode ^= 1; edit_palette &= edit_mode; break;
 				case 'S': if(keyboard[VK_CONTROL]) save_sprite(&main_sprite, file_list[file_list_index]);  break;
 			}
 			
@@ -485,7 +491,50 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 		case WM_LBUTTONDOWN:
 			if(edit_mode && !keyboard[VK_SPACE])
 			{
-				if(wparam & MK_CONTROL)
+				WORD xpos = LOWORD(lparam);
+				WORD ypos = HIWORD(lparam);
+				
+				if(edit_palette)
+				{
+					if(mouse_x > pal_l && mouse_x < pal_r &&
+						mouse_y > pal_t && mouse_y < pal_b)
+					{
+						int px = mouse_x - pal_l - 1;
+						int py = mouse_y - pal_t - 1;
+						
+						if(py > 32)
+						{		
+							edit_pixel.id = get_char_id_from_pos(px, py - 32);
+							set_char_pos(edit_pixel.id, &edit_pixel.u, &edit_pixel.v);
+	
+							edit_pixel.u1 = edit_pixel.u / 256.0f;
+							edit_pixel.v1 = edit_pixel.v / 256.0f;
+							edit_pixel.u2 = (edit_pixel.u + 8) / 256.0f;
+							edit_pixel.v2 = (edit_pixel.v + 8) / 256.0f;
+						}
+						else if(py > 16)
+						{
+							int c = px / 16;
+							if(c > 15) c = 15;
+							
+							edit_pixel.col = (edit_pixel.col & 0x0F) | (c << 4);
+							edit_pixel.bg  = colour_palette[c];
+						}
+						else
+						{			
+							int c = px / 16;
+							if(c > 15) c = 15;
+							
+							edit_pixel.col = (edit_pixel.col & 0xF0) | c;
+							edit_pixel.fg  = colour_palette[c];		
+						}
+					}
+					else
+					{
+						edit_palette = 0;
+					}
+				}
+				else if(wparam & MK_CONTROL)
 				{
 					get_pixel(&main_sprite, &edit_pixel);
 				}
@@ -494,6 +543,38 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 					set_pixel(&main_sprite, &edit_pixel);
 					update_sprite_texture();
 				}
+			}
+			return 0;
+			
+		case WM_RBUTTONDOWN:
+			edit_palette ^= edit_mode & 1;
+			
+			if(edit_palette)
+			{
+				int pal_w = 258;
+				int pal_h = 290;
+
+				WORD xpos = LOWORD(lparam);
+				WORD ypos = HIWORD(lparam);
+				
+				int diff_x = 0;
+				int diff_y = 0;
+				
+				pal_l = xpos;
+				pal_t = ypos;
+				pal_r = xpos + pal_w;
+				pal_b = ypos + pal_h;
+				
+				if(pal_r > wnd_width)
+					diff_x = wnd_width - pal_r;
+				
+				if(pal_b > wnd_height)
+					diff_y = wnd_height - pal_b;
+
+				pal_l += diff_x;
+				pal_t += diff_y;
+				pal_r += diff_x;
+				pal_b += diff_y;
 			}
 			return 0;
 			
@@ -510,7 +591,21 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 			
 			if(edit_mode)
 			{
-				if((wparam & MK_LBUTTON) && keyboard[VK_SPACE] || (wparam & MK_MBUTTON))
+				if(wparam & MK_LBUTTON)
+				{
+					if(keyboard[VK_SPACE])
+					{
+						offx += mouse_dx;
+						offy += mouse_dy;
+					}
+					
+					if(!edit_palette)
+					{
+						set_pixel(&main_sprite, &edit_pixel);
+						update_sprite_texture();
+					}					
+				}
+				else if(wparam & MK_MBUTTON)
 				{
 					offx += mouse_dx;
 					offy += mouse_dy;
@@ -684,6 +779,9 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, char *cmdline, int cmdshow)
 		if(edit_mode)
 		{
 			draw_editor(&edit_pixel);
+
+			if(edit_palette)
+				draw_editor_palette(&edit_pixel);
 		}
 		
 		SwapBuffers(dev_ctx);
