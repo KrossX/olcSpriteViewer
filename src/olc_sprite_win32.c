@@ -538,7 +538,7 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 				{
 					get_pixel(&main_sprite, &edit_pixel);
 				}
-				else
+				else if(!keyboard[VK_SPACE])
 				{
 					set_pixel(&main_sprite, &edit_pixel);
 					update_sprite_texture();
@@ -598,8 +598,7 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 						offx += mouse_dx;
 						offy += mouse_dy;
 					}
-					
-					if(!edit_palette)
+					else if(!edit_palette)
 					{
 						set_pixel(&main_sprite, &edit_pixel);
 						update_sprite_texture();
