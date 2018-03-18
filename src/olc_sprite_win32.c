@@ -10,6 +10,11 @@
 #error Disable UNICODE!
 #endif
 
+#pragma comment(lib, "user32.lib")
+#pragma comment(lib, "gdi32.lib")
+#pragma comment(lib, "opengl32.lib")
+#pragma comment(lib, "shell32.lib")
+
 #pragma warning(push, 1)
 #define WINVER         0x0400
 #define _WIN32_WINNT   0x0400
@@ -551,7 +556,7 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 			return 0;
 			
 		case WM_CLOSE:
-			if(save_check_msg(&main_sprite, file_list[file_list_index]))
+			if(!file_list_count || save_check_msg(&main_sprite, file_list[file_list_index]))
 				DestroyWindow(wnd);
 			return 0;
 			
