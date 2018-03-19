@@ -52,6 +52,7 @@ int wnd_height;
 
 int edit_mode;
 int edit_palette;
+int edit_update_texture;
 
 int pal_l = 50;
 int pal_t = 60;
@@ -61,6 +62,7 @@ int pal_b = 60 + 290;
 float dt_ms;
 float offx, offy, scale = 8.0f;
 float prevx, prevy, prevs = 8.0f;
+float base_scale = 8.0f;
 
 GLuint font_texture, sprite_texture;
 
@@ -199,12 +201,12 @@ void zoom_out(float pointx, float pointy)
 	offy = pointy - (disty * main_sprite.height * scale);
 }
 
-void reset_zoom_pos(float s)
+void reset_zoom_pos()
 {
 	offx = 0;
 	offy = 0;
-	scale = s;
-	prevs = s;
+	scale = base_scale;
+	prevs = base_scale;
 	
 	prevx = 0;
 	prevy = 0;
@@ -224,7 +226,7 @@ void next_file(HWND wnd)
 	load_sprite(&main_sprite, file_list[file_list_index]);
 	update_sprite_texture();
 	update_title(wnd);
-	reset_zoom_pos(8.0f);
+	reset_zoom_pos();
 }
 
 void prev_file(HWND wnd)
@@ -240,7 +242,7 @@ void prev_file(HWND wnd)
 	load_sprite(&main_sprite, file_list[file_list_index]);
 	update_sprite_texture();
 	update_title(wnd);
-	reset_zoom_pos(8.0f);
+	reset_zoom_pos();
 }
 
 void file_list_find(char *filename)
@@ -473,8 +475,8 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 				case VK_NEXT: next_file(wnd); break;
 				case VK_ADD: zoom_in(main_sprite.width * scale * 0.5f + offx, main_sprite.height * scale * 0.5f + offy); break;
 				case VK_SUBTRACT: zoom_out(main_sprite.width * scale * 0.5f + offx, main_sprite.height * scale * 0.5f + offy); break;
-				case VK_MULTIPLY: reset_zoom_pos(8.0f); break;
-				case VK_DIVIDE: reset_zoom_pos(4.0f); break;
+				case VK_MULTIPLY: base_scale = 8.0f; reset_zoom_pos(); break;
+				case VK_DIVIDE: base_scale = 4.0f; reset_zoom_pos(); break;
 				case VK_LEFT: change_preview(-1.0f, 0.0f); break;
 				case VK_RIGHT: change_preview( 1.0f, 0.0f); break;
 				case VK_UP: change_preview(0.0f, -1.0f); break;
@@ -543,7 +545,7 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 				else if(!keyboard[VK_SPACE])
 				{
 					set_pixel(&main_sprite, &edit_pixel);
-					update_sprite_texture();
+					edit_update_texture = 1;
 				}
 			}
 			return 0;
@@ -603,7 +605,7 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 					else if(!edit_palette)
 					{
 						set_pixel(&main_sprite, &edit_pixel);
-						update_sprite_texture();
+						edit_update_texture = 1;
 					}					
 				}
 				else if(wparam & MK_MBUTTON)
@@ -644,7 +646,7 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 				{
 					file_list_find(filename);
 					load_sprite(&main_sprite, file_list[file_list_index]);
-					reset_zoom_pos(8.0f);
+					reset_zoom_pos();
 					update_sprite_texture();
 					update_title(wnd);
 				}
@@ -779,6 +781,12 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, char *cmdline, int cmdshow)
 		
 		if(edit_mode)
 		{
+			if(edit_update_texture)
+			{
+				update_sprite_texture();
+				edit_update_texture = 0;
+			}
+			
 			draw_editor(&edit_pixel);
 
 			if(edit_palette)
