@@ -60,7 +60,7 @@ int pal_b = 60 + 290;
 
 float dt_ms;
 float offx, offy, scale = 8.0f;
-float prevx, prevy;
+float prevx, prevy, prevs = 8.0f;
 
 GLuint font_texture, sprite_texture;
 
@@ -199,11 +199,12 @@ void zoom_out(float pointx, float pointy)
 	offy = pointy - (disty * main_sprite.height * scale);
 }
 
-void reset_zoom_pos(void)
+void reset_zoom_pos(float s)
 {
 	offx = 0;
 	offy = 0;
-	scale = 8.0f;
+	scale = s;
+	prevs = s;
 	
 	prevx = 0;
 	prevy = 0;
@@ -223,7 +224,7 @@ void next_file(HWND wnd)
 	load_sprite(&main_sprite, file_list[file_list_index]);
 	update_sprite_texture();
 	update_title(wnd);
-	reset_zoom_pos();
+	reset_zoom_pos(8.0f);
 }
 
 void prev_file(HWND wnd)
@@ -239,7 +240,7 @@ void prev_file(HWND wnd)
 	load_sprite(&main_sprite, file_list[file_list_index]);
 	update_sprite_texture();
 	update_title(wnd);
-	reset_zoom_pos();
+	reset_zoom_pos(8.0f);
 }
 
 void file_list_find(char *filename)
@@ -472,7 +473,8 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 				case VK_NEXT: next_file(wnd); break;
 				case VK_ADD: zoom_in(main_sprite.width * scale * 0.5f + offx, main_sprite.height * scale * 0.5f + offy); break;
 				case VK_SUBTRACT: zoom_out(main_sprite.width * scale * 0.5f + offx, main_sprite.height * scale * 0.5f + offy); break;
-				case VK_MULTIPLY: reset_zoom_pos(); break;
+				case VK_MULTIPLY: reset_zoom_pos(8.0f); break;
+				case VK_DIVIDE: reset_zoom_pos(4.0f); break;
 				case VK_LEFT: change_preview(-1.0f, 0.0f); break;
 				case VK_RIGHT: change_preview( 1.0f, 0.0f); break;
 				case VK_UP: change_preview(0.0f, -1.0f); break;
@@ -642,7 +644,7 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 				{
 					file_list_find(filename);
 					load_sprite(&main_sprite, file_list[file_list_index]);
-					reset_zoom_pos();
+					reset_zoom_pos(8.0f);
 					update_sprite_texture();
 					update_title(wnd);
 				}

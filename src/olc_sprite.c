@@ -367,10 +367,10 @@ void draw_segment(struct olc_sprite *sprite)
 		glVertex2f(x1, y1);
 	glEnd();
 	
-	x1 = wnd_width - 16.0f * 8.0f;
+	x1 = wnd_width - 16.0f * prevs;
 	y1 = 0;
 	x2 = (float)wnd_width;
-	y2 = 16.0f * 8.0f;
+	y2 = 16.0f * prevs;
 	
 	glEnable(GL_BLEND);
 	glBegin(GL_TRIANGLE_STRIP);
