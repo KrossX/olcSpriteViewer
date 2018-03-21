@@ -66,8 +66,7 @@ float base_scale = 8.0f;
 
 GLuint font_texture, sprite_texture;
 
-#include "font_8x8.c"
-#include "font_8x8_256x256.c"
+#include "pxplus_ibm_cga.c"
 #include "olc_sprite.c"
 
 struct olc_sprite main_sprite;
@@ -148,7 +147,7 @@ size_t cheap_strlen(char *str)
 void update_sprite_texture(void)
 {
 	glBindTexture(GL_TEXTURE_2D, sprite_texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, 4, main_sprite.width * 8, main_sprite.height * 8, 0, GL_RGBA, GL_UNSIGNED_BYTE, main_sprite.tex);
+	glTexImage2D(GL_TEXTURE_2D, 0, 4, main_sprite.width * 8, main_sprite.height * 8, 0, GL_RGBA, GL_UNSIGNED_BYTE, main_sprite.tex8x8);
 
 	//generate mipmap?
 }
@@ -387,7 +386,7 @@ void load_font_texture(void)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_INTENSITY, 256, 256, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, font_8x8_256x256);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_INTENSITY, 256, 256, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, pxplus_ibm_cga);
 }
 
 void toggle_fullscreen(HWND wnd)
@@ -508,8 +507,8 @@ LRESULT CALLBACK wndproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 						
 						if(py > 32)
 						{		
-							edit_pixel.id = get_char_id_from_pos(px, py - 32);
-							set_char_pos(edit_pixel.id, &edit_pixel.u, &edit_pixel.v);
+							edit_pixel.id = pxplus_ibm_cga_pos_to_id(px, py - 32);
+							pxplus_ibm_cga_id_to_pos(edit_pixel.id, &edit_pixel.u, &edit_pixel.v);
 	
 							edit_pixel.u1 = edit_pixel.u / 256.0f;
 							edit_pixel.v1 = edit_pixel.v / 256.0f;

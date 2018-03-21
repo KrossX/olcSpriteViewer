@@ -32,7 +32,8 @@ struct olc_sprite
 	int height;
 	WORD *colour;
 	WCHAR *glyph;
-	void *tex;
+	void *tex8x8;
+	void *mem;
 	
 	BOOL loaded;
 	BOOL need_backup;
@@ -58,7 +59,7 @@ void get_pixel_data(struct olc_sprite *sprite, int pos, struct olc_pixel *pix)
 	pix->fg = colour_palette[pix->col & 0xF];
 	pix->bg = colour_palette[(pix->col>>4) & 0xF];
 	
-	set_char_pos(pix->id, &pix->u, &pix->v);
+	pxplus_ibm_cga_id_to_pos(pix->id, &pix->u, &pix->v);
 	
 	pix->u1 = pix->u / 256.0f;
 	pix->v1 = pix->v / 256.0f;
@@ -71,7 +72,7 @@ void gen_sprite_texture(struct olc_sprite *sprite)
 	struct olc_pixel pix;
 	int x, y, px, py;
 
-	u32 *tex = sprite->tex;
+	u32 *tex = sprite->tex8x8;
 	
 	for(y = 0; y < sprite->height; y++)
 	for(x = 0; x < sprite->width; x++)
@@ -85,7 +86,7 @@ void gen_sprite_texture(struct olc_sprite *sprite)
 			int ppos = (y * 8 + py) * (sprite->width * 8) + (x * 8 + px);
 			int tpos = (pix.v + py) * 256 + (pix.u + px);
 			
-			tex[ppos] = pix.id == ' ' ? 0 : font_8x8_256x256[tpos] ? pix.fg : pix.bg;
+			tex[ppos] = pix.id == ' ' ? 0 : pxplus_ibm_cga[tpos] ? pix.fg : pix.bg;
 		}
 	}
 }
@@ -149,15 +150,14 @@ int save_check_msg(struct olc_sprite *sprite, char *filename)
 
 void clear_sprite_data(struct olc_sprite *sprite)
 {
-	if(sprite->colour) virtual_free(sprite->colour);
-	if(sprite->glyph)  virtual_free(sprite->glyph);
-	if(sprite->tex)    virtual_free(sprite->tex);
+	if(sprite->mem) virtual_free(sprite->mem);
 	
 	sprite->width  = 0;
 	sprite->height = 0;
+	sprite->mem    = NULL;
 	sprite->colour = NULL;
 	sprite->glyph  = NULL;
-	sprite->tex    = NULL;
+	sprite->tex8x8 = NULL;
 }
 
 int load_sprite(struct olc_sprite *sprite, char *filename)
@@ -189,18 +189,24 @@ int load_sprite(struct olc_sprite *sprite, char *filename)
 			if(width > 0 && height > 0)
 			{
 				DWORD section_bytes = width * height * 2;
+				DWORD total_bytes = section_bytes + section_bytes + section_bytes * 2 * 8 * 8;
 
 				sprite->width  = width;
 				sprite->height = height;
-				sprite->colour = virtual_alloc(section_bytes);
-				sprite->glyph  = virtual_alloc(section_bytes); 
-				sprite->tex    = virtual_alloc(section_bytes * 2 * 8 * 8);
 
-				if(sprite->colour && sprite->glyph && sprite->tex)
+				sprite->mem = virtual_alloc(total_bytes);
+				
+				sprite->colour = sprite->mem;
+				sprite->glyph  = (void*)((u8*)sprite->mem + section_bytes);
+				sprite->tex8x8 = (void*)((u8*)sprite->mem + section_bytes * 2);
+
+				if(sprite->mem)
 				{
 					ReadFile(file, sprite->colour, section_bytes, &bytes_read, NULL);
 					ReadFile(file, sprite->glyph,  section_bytes, &bytes_read, NULL);
+					
 					gen_sprite_texture(sprite);
+					
 					sprite->loaded      = TRUE;
 					sprite->need_backup = TRUE;
 					sprite->changed     = FALSE;	
@@ -236,7 +242,7 @@ void draw_text(float x, float y, char *text)
 		int u, v;
 		float u1, v1, u2, v2;
 		
-		set_char_pos(*text, &u, &v);
+		pxplus_ibm_cga_id_to_pos(*text, &u, &v);
 		
 		u1 = u / 256.0f;
 		v1 = v / 256.0f;
@@ -413,9 +419,10 @@ void draw_sprite(struct olc_sprite *sprite)
 	
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
+	
 	glBindTexture(GL_TEXTURE_2D, sprite_texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, scale > 24.0f ? GL_NEAREST : GL_LINEAR);
-	
+
 	glBegin(GL_TRIANGLE_STRIP);
 		glColor3f(1.0f, 1.0f, 1.0f);
 		glTexCoord2f(0.0f, 0.0f); glVertex2f(x1, y1);
@@ -427,9 +434,9 @@ void draw_sprite(struct olc_sprite *sprite)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glDisable(GL_TEXTURE_2D);
 	
-	if(scale > 16.0f)
+	if(scale > 12.0f)
 	{
-		float alpha = scale < 32.0f ? (scale - 16.0f) / 64.0f : 0.25f;
+		float alpha = scale < 32.0f ? (scale - 12.0f) / 80.0f : 0.25f;
 
 		glBegin(GL_LINES);
 			glColor4f(0.1f, 0.1f, 0.1f, alpha);
@@ -663,7 +670,7 @@ void set_pixel(struct olc_sprite *sprite, struct olc_pixel *pix)
 	int charx = (int)((mouse_x - offx) / scale);
 	int chary = (int)((mouse_y - offy) / scale);
 	
-	u32 *tex = sprite->tex;
+	u32 *tex = sprite->tex8x8;
 	
 	if(charx >= 0 && charx < sprite->width &&
 		chary >= 0 && chary < sprite->height)
@@ -680,7 +687,7 @@ void set_pixel(struct olc_sprite *sprite, struct olc_pixel *pix)
 			int ppos = (chary * 8 + py) * (sprite->width * 8) + (charx * 8 + px);
 			int tpos = (pix->v + py) * 256 + (pix->u + px);
 			
-			tex[ppos] = pix->id == ' ' ? 0 : font_8x8_256x256[tpos] ? pix->fg : pix->bg;
+			tex[ppos] = pix->id == ' ' ? 0 : pxplus_ibm_cga[tpos] ? pix->fg : pix->bg;
 		}
 		
 		sprite->changed = TRUE;
