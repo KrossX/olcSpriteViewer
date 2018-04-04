@@ -1,0 +1,28 @@
+===============================================================================
+OneLoneCode Sprite (SPR) Viewer
+===============================================================================
+
+Currently portable. It will open SPR file in current folder. You can also drag
+and drop an SPR file into the viewer's window.
+
+KEYS:
+=====
+
+PAGE UP     - PREVIOUS FILE
+PAGE DOWN   - NEXT FILE
+MOUSE DRAG  - MOVE SPRITE
+KEYPAD ADD  - ZOOM IN
+KEYPAD SUB  - ZOOM OUT
+KEYPAD MUL  - RESET ZOOM POS (8pix)
+KEYPAD DIV  - RESET ZOOM POS (4pix)
+CURSOR KEYS - PREVIEW SELECT
+ALT + ENTER - FULLSCREEN
+
+TAB         - ENTER EDIT MODE
+MOUSE LEFT  - PAINT
+MOUSE LEFT + CTRL   - GET PIXEL
+MOUSE DRAG + SPACE  - MOVE SPRITE
+MOUSE DRAG (MIDDLE) - MOVE SPRITE
+MOUSE RIGHT - COLOR/GLYPH SELECT
+
+CTRL + S    - SAVE FILE
