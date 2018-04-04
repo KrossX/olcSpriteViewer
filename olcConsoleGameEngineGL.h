@@ -6645,6 +6645,38 @@ class olcConsoleGameEngine
 
 	void WindowResize(void)
 	{
+		DWORD style  = GetWindowLong(m_hWnd, GWL_STYLE);
+		DWORD stylex = GetWindowLong(m_hWnd, GWL_EXSTYLE);
+		
+		RECT rWndRect = { 0, 0, m_nWindowWidth, m_nWindowHeight };
+
+		if (style & WS_OVERLAPPEDWINDOW)
+		{
+			AdjustWindowRectEx(&rWndRect, style, FALSE, stylex);
+
+			int width = rWndRect.right - rWndRect.left;
+			int height = rWndRect.bottom - rWndRect.top;
+
+			SetWindowPos(m_hWnd, HWND_TOP, 0, 0, width, height, SWP_NOMOVE | SWP_NOOWNERZORDER);
+		}
+		else
+		{
+			ToggleFullscreen(m_hWnd);
+
+			AdjustWindowRectEx(&rWndRect, style, FALSE, stylex);
+
+			int width = rWndRect.right - rWndRect.left;
+			int height = rWndRect.bottom - rWndRect.top;
+
+			SetWindowPos(m_hWnd, HWND_TOP, 0, 0, width, height, SWP_NOMOVE | SWP_NOOWNERZORDER);
+
+			ToggleFullscreen(m_hWnd);
+		}
+		
+	}
+
+	void WindowUpdateScale(void)
+	{
 		int width = m_nWindowWidth;
 		int height = m_nWindowHeight;
 		
@@ -6706,6 +6738,7 @@ class olcConsoleGameEngine
 				if(!cge->m_hRenCtx) return -1;
 				
 				wglMakeCurrent(cge->m_hDevCtx, cge->m_hRenCtx);
+				ShowWindow(cge->m_hConsole, SW_HIDE);
 				return 0;
 				
 			case WM_SYSCHAR:
@@ -6735,7 +6768,16 @@ class olcConsoleGameEngine
 				return 0;
 				
 			case WM_DESTROY:
+				ShowWindow(cge->m_hConsole, SW_SHOW);
 				PostQuitMessage(0);
+				return 0;
+
+			case 0x8000:
+				cge->ToggleFullscreen(hWnd);
+				return 0;
+
+			case 0x8001:
+				cge->WindowResize();
 				return 0;
 		}
 		
@@ -6791,35 +6833,54 @@ public:
 		m_mousePosY = 0;
 
 		m_sAppName = L"Default";
+
+		//grab 1 GB or memory
+		m_bufMemory = (uint8_t*)VirtualAlloc(NULL, 1024 * 1024 * 1024, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+		if (!m_bufMemory) throw exception("No Memory!");
+
+		m_bufScreen = (CHAR_INFO*)&m_bufMemory[0];
+		m_bufScreen_old = (CHAR_INFO*)&m_bufMemory[21474304];
+
+		m_fVertexArray = (float*)&m_bufMemory[42948608];
+		m_fTexCoordArray = (float*)&m_bufMemory[300640256];
+		m_uIndicesArray = (uint32_t*)&m_bufMemory[558331904];
+
+		m_uForegroundColorArray = (uint32_t*)&m_bufMemory[816023552];
+		m_uBackgroundColorArray = (uint32_t*)&m_bufMemory[944869376];
+		
+		m_hConsole = GetConsoleWindow();
 	}
 
 	int ConstructConsole(int width, int height, int fontw, int fonth)
 	{
 		m_nScreenWidth = width;
 		m_nScreenHeight = height;
-		
+
 		m_nFontWidth = fontw;
 		m_nFontHeight = fonth;
 
-		m_nWindowWidth = width * fontw;
-		m_nWindowHeight = height * fonth;
+		int newWndWidth = width * fontw;
+		int newWndHeight = height * fonth;
+
+		if (m_hWnd && ((m_nWindowWidth != newWndWidth) || (m_nWindowHeight != newWndHeight)))
+		{
+			SendMessage(m_hWnd, 0x8001, 0, 0);
+		}
+
+		m_nWindowWidth = newWndWidth;
+		m_nWindowHeight = newWndHeight;
 
 		// Allocate memory for screen buffer
 		size_t bufLen = m_nScreenWidth * m_nScreenHeight;
 
-		m_bufScreen = new CHAR_INFO[bufLen];
-		memset(m_bufScreen, 0, sizeof(CHAR_INFO) * bufLen);
+		if (bufLen > 0x51EB00)
+		{
+			MessageBoxA(NULL, "Not enough memory!", "ERROR!", MB_OK);
+			ExitProcess(0xDEADC0DE);
+		}
 
-		m_bufScreen_old = new CHAR_INFO[bufLen];
-		memset(m_bufScreen_old, 0, sizeof(CHAR_INFO) * bufLen);
-		
-		m_fVertexArray = new float[bufLen * 2 * 6];
-		m_fTexCoordArray = new float[bufLen * 2 * 6];
-		m_uIndicesArray = new uint32_t[bufLen * 2 * 6];
-		
-		m_uForegroundColorArray = new uint32_t[bufLen * 6];
-		m_uBackgroundColorArray = new uint32_t[bufLen * 6];
-		
+		memset(m_bufMemory, 0, bufLen * 200);
+
 		for(int y = 0; y < m_nScreenHeight; y++)
 		for(int x = 0; x < m_nScreenWidth; x++)
 		{
@@ -7100,32 +7161,21 @@ public:
 		}
 	}
 	
-	void ReleaseBuffers()
-	{
-		if(m_bufScreen)     delete[] m_bufScreen;
-		if(m_bufScreen_old) delete[] m_bufScreen_old;
-		
-		if(m_fVertexArray)   delete[] m_fVertexArray;
-		if(m_fTexCoordArray) delete[] m_fTexCoordArray;
-		if(m_uIndicesArray)  delete[] m_uIndicesArray;
-		if(m_uForegroundColorArray) delete[] m_uForegroundColorArray;
-		if(m_uBackgroundColorArray) delete[] m_uBackgroundColorArray;
-
-		
-		m_bufScreen     = nullptr;
-		m_bufScreen_old = nullptr;
-		
-		m_fVertexArray  = nullptr;
-		m_fTexCoordArray = nullptr;
-		m_uIndicesArray  = nullptr;
-		
-		m_uForegroundColorArray = nullptr;
-		m_uBackgroundColorArray = nullptr;
-	}
-
 	~olcConsoleGameEngine()
 	{
-		ReleaseBuffers();
+		if (m_bufMemory) VirtualFree(m_bufMemory, 0, MEM_RELEASE);
+
+		m_bufMemory = nullptr;
+
+		m_bufScreen = nullptr;
+		m_bufScreen_old = nullptr;
+
+		m_fVertexArray = nullptr;
+		m_fTexCoordArray = nullptr;
+		m_uIndicesArray = nullptr;
+
+		m_uForegroundColorArray = nullptr;
+		m_uBackgroundColorArray = nullptr;
 	}
 	
 	void GenerateMipmapPow2(uint8_t *tex_new, uint8_t *tex_old, uint8_t *ref_alpha, int size)
@@ -7343,15 +7393,15 @@ private:
 				m_mouse[0x02] = m_keys[VK_MBUTTON];
 				m_mouse[0x03] = m_keys[0x05]; // VK_XBUTTON1
 				m_mouse[0x04] = m_keys[0x06]; // VK_XBUTTON2
-				
+
 				if(m_keys[VK_MENU].bHeld && m_keys[VK_RETURN].bPressed)
 				{
-					ToggleFullscreen(m_hWnd);
+					SendMessage(m_hWnd, 0x8000, 0, 0);
 				}
 				
 				if(m_bDoWindowUpdate)
 				{
-					WindowResize();
+					WindowUpdateScale();
 					m_bDoWindowUpdate = false;
 				}
 				
@@ -7463,7 +7513,6 @@ private:
 			if (OnUserDestroy())
 			{
 				// User has permitted destroy, so exit and clean up
-				ReleaseBuffers();
 				m_cvGameFinished.notify_one();
 			}
 			else
@@ -7537,6 +7586,7 @@ protected:
 	float *m_fTexCoordArray;
 	CHAR_INFO *m_bufScreen;
 	CHAR_INFO *m_bufScreen_old;
+	uint8_t *m_bufMemory;
 	wstring m_sAppName;
 	SMALL_RECT m_rectWindow;
 	short m_keyOldState[256] = { 0 };
@@ -7545,9 +7595,10 @@ protected:
 	bool m_mouseNewState[5] = { 0 };
 	bool m_bConsoleInFocus = true;
 	bool m_bDoWindowUpdate = false;
-	HWND  m_hWnd;
-	HDC   m_hDevCtx;
-	HGLRC m_hRenCtx;
+	HWND  m_hConsole = nullptr;
+	HWND  m_hWnd     = nullptr;
+	HDC   m_hDevCtx  = nullptr;
+	HGLRC m_hRenCtx  = nullptr;
 	GLuint m_uFontTexture;
 	static atomic<bool> m_bAtomActive;
 	static condition_variable m_cvGameFinished;
