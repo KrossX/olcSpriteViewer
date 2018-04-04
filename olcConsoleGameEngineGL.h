@@ -6469,10 +6469,12 @@ public:
 	int nWidth = 0;
 	int nHeight = 0;
 
-private:
+//Yer touching private things king!
+//private:
 	wchar_t *m_Glyphs = nullptr;
 	short *m_Colours = nullptr;
 
+private:
 	void Create(int w, int h)
 	{
 		nWidth = w;
@@ -6710,34 +6712,6 @@ class olcConsoleGameEngine
 				//ding ding ding
 				return 0;
 				
-			case WM_SYSKEYDOWN:
-				cge->m_keyNewState[wParam] = 1;
-			
-				if(wParam == VK_RETURN && (lParam & (1<<29)))
-					cge->ToggleFullscreen(hWnd);
-				return 0;
-				
-			case WM_SYSKEYUP:
-				cge->m_keyNewState[wParam] = 0;
-				return 0;
-				
-			case WM_KEYDOWN: // CTRL + C, Close
-				cge->m_keyNewState[wParam] = 1;
-				return 0;	
-				
-			case WM_KEYUP:
-				cge->m_keyNewState[wParam] = 0;
-				return 0;
-				
-			case WM_LBUTTONDOWN: cge->m_keyNewState[VK_LBUTTON] = 1; return 0;
-			case WM_LBUTTONUP:   cge->m_keyNewState[VK_LBUTTON] = 0; return 0;
-			case WM_RBUTTONDOWN: cge->m_keyNewState[VK_RBUTTON] = 1; return 0;
-			case WM_RBUTTONUP:   cge->m_keyNewState[VK_RBUTTON] = 0; return 0;
-			case WM_MBUTTONDOWN: cge->m_keyNewState[VK_MBUTTON] = 1; return 0;
-			case WM_MBUTTONUP:   cge->m_keyNewState[VK_MBUTTON] = 0; return 0;
-			case 0x020B: cge->m_keyNewState[HIWORD(lParam)+4] = 1; return 0; //XBUTTONS
-			case 0x00AC: cge->m_keyNewState[HIWORD(lParam)+4] = 0; return 0; //XBUTTONS
-				
 			case WM_MOUSEMOVE:
 				cge->UpdateMousePosition(LOWORD(lParam), HIWORD(lParam));
 				return 0;
@@ -6757,7 +6731,7 @@ class olcConsoleGameEngine
 				return 0;
 				
 			case WM_CLOSE:
-				DestroyWindow(hWnd);
+				m_bAtomActive = false;
 				return 0;
 				
 			case WM_DESTROY:
@@ -7147,8 +7121,7 @@ public:
 		wglSwapInterval(0);
 		
 		glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
-		glAlphaFunc(GL_GREATER, 0.5f);
-		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		wglMakeCurrent(NULL, NULL);
 
 		// Star the thread
@@ -7161,8 +7134,6 @@ public:
 			DispatchMessage(&msg);
 		}
 		
-		m_bAtomActive = false;
-
 		// Wait for thread to be exited
 		t.join();
 	}
@@ -7210,14 +7181,10 @@ private:
 				float fElapsedTime = (float)((timeNew.QuadPart - timeOld.QuadPart) / (double)timeFreq.QuadPart);
 				timeOld = timeNew;
 
-				if(m_bDoWindowUpdate)
-				{
-					WindowResize();
-					m_bDoWindowUpdate = false;
-				}
-				
 				for (int i = 0; i < 256; i++)
 				{
+					m_keyNewState[i] = GetAsyncKeyState(i) >> 15;
+					
 					m_keys[i].bPressed = false;
 					m_keys[i].bReleased = false;
 
@@ -7236,12 +7203,23 @@ private:
 					}
 
 					m_keyOldState[i] = m_keyNewState[i];
-					
-					m_mouse[0x00] = m_keys[VK_LBUTTON];
-					m_mouse[0x01] = m_keys[VK_RBUTTON];
-					m_mouse[0x02] = m_keys[VK_MBUTTON];
-					m_mouse[0x03] = m_keys[0x05]; // VK_XBUTTON1
-					m_mouse[0x04] = m_keys[0x06]; // VK_XBUTTON2
+				}
+				
+				m_mouse[0x00] = m_keys[VK_LBUTTON];
+				m_mouse[0x01] = m_keys[VK_RBUTTON];
+				m_mouse[0x02] = m_keys[VK_MBUTTON];
+				m_mouse[0x03] = m_keys[0x05]; // VK_XBUTTON1
+				m_mouse[0x04] = m_keys[0x06]; // VK_XBUTTON2
+				
+				if(m_keys[VK_MENU].bHeld && m_keys[VK_RETURN].bPressed)
+				{
+					ToggleFullscreen(m_hWnd);
+				}
+				
+				if(m_bDoWindowUpdate)
+				{
+					WindowResize();
+					m_bDoWindowUpdate = false;
 				}
 				
 				glClear(GL_COLOR_BUFFER_BIT);
@@ -7324,12 +7302,12 @@ private:
 				glDrawArrays(GL_TRIANGLES, 0, m_nScreenWidth * m_nScreenHeight * 6);
 				
 				glEnable(GL_TEXTURE_2D);
-				glEnable(GL_ALPHA_TEST);
+				glEnable(GL_BLEND);
 				
 				glColorPointer(4, GL_UNSIGNED_BYTE, 0, m_uForegroundColorArray);
 				glDrawArrays(GL_TRIANGLES, 0, m_nScreenWidth * m_nScreenHeight * 6);
 				
-				glDisable(GL_ALPHA_TEST);
+				glDisable(GL_BLEND);
 				glDisable(GL_TEXTURE_2D);
 
 				glPopMatrix();
@@ -7345,7 +7323,6 @@ private:
 			if (OnUserDestroy())
 			{
 				// User has permitted destroy, so exit and clean up
-
 				if(m_bufScreen)
 				{
 					delete[] m_bufScreen;
@@ -7360,6 +7337,8 @@ private:
 				m_bAtomActive = true;
 			}
 		}
+		
+		PostMessage(m_hWnd, WM_DESTROY, 0, 0);
 	}
 
 public:
