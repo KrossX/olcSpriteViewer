@@ -129,6 +129,9 @@ Character Set -> Use Unicode. Thanks! For now, I'll try enabling it for you - Ja
 #include <condition_variable>
 using namespace std;
 
+#define GL_GENERATE_MIPMAP                0x8191
+#define GL_GENERATE_MIPMAP_HINT           0x8192
+
 typedef BOOL  (WINAPI wglSwapInterval_t) (int interval);
 wglSwapInterval_t *wglSwapInterval;
 
@@ -6708,8 +6711,14 @@ class olcConsoleGameEngine
 				return 0;
 				
 			case WM_SYSKEYDOWN:
+				cge->m_keyNewState[wParam] = 1;
+			
 				if(wParam == VK_RETURN && (lParam & (1<<29)))
 					cge->ToggleFullscreen(hWnd);
+				return 0;
+				
+			case WM_SYSKEYUP:
+				cge->m_keyNewState[wParam] = 0;
 				return 0;
 				
 			case WM_KEYDOWN: // CTRL + C, Close
@@ -6719,6 +6728,15 @@ class olcConsoleGameEngine
 			case WM_KEYUP:
 				cge->m_keyNewState[wParam] = 0;
 				return 0;
+				
+			case WM_LBUTTONDOWN: cge->m_keyNewState[VK_LBUTTON] = 1; return 0;
+			case WM_LBUTTONUP:   cge->m_keyNewState[VK_LBUTTON] = 0; return 0;
+			case WM_RBUTTONDOWN: cge->m_keyNewState[VK_RBUTTON] = 1; return 0;
+			case WM_RBUTTONUP:   cge->m_keyNewState[VK_RBUTTON] = 0; return 0;
+			case WM_MBUTTONDOWN: cge->m_keyNewState[VK_MBUTTON] = 1; return 0;
+			case WM_MBUTTONUP:   cge->m_keyNewState[VK_MBUTTON] = 0; return 0;
+			case 0x020B: cge->m_keyNewState[HIWORD(lParam)+4] = 1; return 0; //XBUTTONS
+			case 0x00AC: cge->m_keyNewState[HIWORD(lParam)+4] = 0; return 0; //XBUTTONS
 				
 			case WM_MOUSEMOVE:
 				cge->UpdateMousePosition(LOWORD(lParam), HIWORD(lParam));
@@ -7117,7 +7135,10 @@ public:
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		
+		glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
+		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, TRUE);
 		
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_INTENSITY, 256, 256, 0, GL_LUMINANCE,
 						GL_UNSIGNED_BYTE, pxplus_ibm_cga);
@@ -7126,8 +7147,8 @@ public:
 		wglSwapInterval(0);
 		
 		glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
-		//glAlphaFunc(GL_GREATER, 0.0f);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glAlphaFunc(GL_GREATER, 0.5f);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		wglMakeCurrent(NULL, NULL);
 
 		// Star the thread
@@ -7303,12 +7324,12 @@ private:
 				glDrawArrays(GL_TRIANGLES, 0, m_nScreenWidth * m_nScreenHeight * 6);
 				
 				glEnable(GL_TEXTURE_2D);
-				glEnable(GL_BLEND);
+				glEnable(GL_ALPHA_TEST);
 				
 				glColorPointer(4, GL_UNSIGNED_BYTE, 0, m_uForegroundColorArray);
 				glDrawArrays(GL_TRIANGLES, 0, m_nScreenWidth * m_nScreenHeight * 6);
 				
-				glDisable(GL_BLEND);
+				glDisable(GL_ALPHA_TEST);
 				glDisable(GL_TEXTURE_2D);
 
 				glPopMatrix();
