@@ -6806,11 +6806,16 @@ public:
 
 		// Allocate memory for screen buffer
 		size_t bufLen = m_nScreenWidth * m_nScreenHeight;
+
 		m_bufScreen = new CHAR_INFO[bufLen];
 		memset(m_bufScreen, 0, sizeof(CHAR_INFO) * bufLen);
+
+		m_bufScreen_old = new CHAR_INFO[bufLen];
+		memset(m_bufScreen_old, 0, sizeof(CHAR_INFO) * bufLen);
 		
 		m_fVertexArray = new float[bufLen * 2 * 6];
 		m_fTexCoordArray = new float[bufLen * 2 * 6];
+		m_uIndicesArray = new uint32_t[bufLen * 2 * 6];
 		
 		m_uForegroundColorArray = new uint32_t[bufLen * 6];
 		m_uBackgroundColorArray = new uint32_t[bufLen * 6];
@@ -6839,6 +6844,19 @@ public:
 			m_fVertexArray[pos + 9]  = y2;
 			m_fVertexArray[pos + 10] = x2;
 			m_fVertexArray[pos + 11] = y2;
+			
+			m_uIndicesArray[pos + 0]  = pos + 0;
+			m_uIndicesArray[pos + 1]  = pos + 1;
+			m_uIndicesArray[pos + 2]  = pos + 2;
+			m_uIndicesArray[pos + 3]  = pos + 3;
+			m_uIndicesArray[pos + 4]  = pos + 4;
+			m_uIndicesArray[pos + 5]  = pos + 5;
+			m_uIndicesArray[pos + 6]  = pos + 6;
+			m_uIndicesArray[pos + 7]  = pos + 7;
+			m_uIndicesArray[pos + 8]  = pos + 8;
+			m_uIndicesArray[pos + 9]  = pos + 9;
+			m_uIndicesArray[pos + 10] = pos + 10;
+			m_uIndicesArray[pos + 11] = pos + 11;
 		}
 
 		return 1;
@@ -7081,14 +7099,33 @@ public:
 				(int)vecTransformedCoordinates[j % verts].first, (int)vecTransformedCoordinates[j % verts].second, PIXEL_SOLID, col);
 		}
 	}
+	
+	void ReleaseBuffers()
+	{
+		if(m_bufScreen)     delete[] m_bufScreen;
+		if(m_bufScreen_old) delete[] m_bufScreen_old;
+		
+		if(m_fVertexArray)   delete[] m_fVertexArray;
+		if(m_fTexCoordArray) delete[] m_fTexCoordArray;
+		if(m_uIndicesArray)  delete[] m_uIndicesArray;
+		if(m_uForegroundColorArray) delete[] m_uForegroundColorArray;
+		if(m_uBackgroundColorArray) delete[] m_uBackgroundColorArray;
+
+		
+		m_bufScreen     = nullptr;
+		m_bufScreen_old = nullptr;
+		
+		m_fVertexArray  = nullptr;
+		m_fTexCoordArray = nullptr;
+		m_uIndicesArray  = nullptr;
+		
+		m_uForegroundColorArray = nullptr;
+		m_uBackgroundColorArray = nullptr;
+	}
 
 	~olcConsoleGameEngine()
 	{
-		if(m_bufScreen)
-		{
-			delete[] m_bufScreen;
-			m_bufScreen = nullptr;
-		}
+		ReleaseBuffers();
 	}
 	
 	void GenerateMipmapPow2(uint8_t *tex_new, uint8_t *tex_old, uint8_t *ref_alpha, int size)
@@ -7336,6 +7373,12 @@ private:
 				for(int x = 0; x < m_nScreenWidth; x++)
 				{
 					int pos = y * m_nScreenWidth + x;
+					
+					if((m_bufScreen[pos].Char.UnicodeChar == m_bufScreen_old[pos].Char.UnicodeChar) &&
+					   (m_bufScreen[pos].Attributes == m_bufScreen_old[pos].Attributes))
+							continue;
+							
+					m_bufScreen_old[pos] = m_bufScreen[pos];
 
 					WCHAR id = m_bufScreen[pos].Char.UnicodeChar;
 					WORD col = m_bufScreen[pos].Attributes;
@@ -7396,6 +7439,7 @@ private:
 				
 				glColorPointer(4, GL_UNSIGNED_BYTE, 0, m_uBackgroundColorArray);
 				glDrawArrays(GL_TRIANGLES, 0, m_nScreenWidth * m_nScreenHeight * 6);
+				//glDrawElements(GL_TRIANGLES, m_nScreenWidth * m_nScreenHeight * 6, GL_UNSIGNED_INT, m_uIndicesArray);
 				
 				glEnable(GL_TEXTURE_2D);
 				glEnable(GL_BLEND);
@@ -7419,12 +7463,7 @@ private:
 			if (OnUserDestroy())
 			{
 				// User has permitted destroy, so exit and clean up
-				if(m_bufScreen)
-				{
-					delete[] m_bufScreen;
-					m_bufScreen = nullptr;
-				}
-
+				ReleaseBuffers();
 				m_cvGameFinished.notify_one();
 			}
 			else
@@ -7492,10 +7531,12 @@ protected:
 	float m_fDrawOffsetX;
 	float m_fDrawOffsetY;
 	float *m_fVertexArray;
+	uint32_t *m_uIndicesArray;
 	uint32_t *m_uForegroundColorArray;
 	uint32_t *m_uBackgroundColorArray;
 	float *m_fTexCoordArray;
 	CHAR_INFO *m_bufScreen;
+	CHAR_INFO *m_bufScreen_old;
 	wstring m_sAppName;
 	SMALL_RECT m_rectWindow;
 	short m_keyOldState[256] = { 0 };
