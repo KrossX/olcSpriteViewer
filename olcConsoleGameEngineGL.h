@@ -264,20 +264,14 @@ char pxplus_ibm_cga_enc[8509+1] =
 "0000000000000000000000eSIeh17tn3ts3V1Vr90000000000000000000000000WKVdsqlOtfPfPrlK?3000000000000000000000000enq<hOtnS?<HqHVIkn00"
 "00000000000000000000000e36hmhJLeQ3VKSIVr?0000000000000000000000000Kpl<8P028qeIqqspW300000000000000000000000006Hm17L0007<0600et0";
 
-unsigned char_decode_custom_base64(unsigned c6) 
-{
-	if(c6 < 97) return c6 - '0';
-	else if(c6 < 127) return c6 + 44 - 'a';
-	else return c6 - 74;
-}
-
 void font_decode_custom_base64(void) 
 {
 	int i, o = 0;
-	
+
 	for(i = 0; i < 8509; i++) 
 	{
-		unsigned c = char_decode_custom_base64(pxplus_ibm_cga_enc[i]);
+		unsigned c = pxplus_ibm_cga_enc[i];
+		c = c < 97 ? c - '0' : c + 44 - 'a';
 		pxplus_ibm_cga[o++] = ((c>>0)&1) * 0xFF;
 		pxplus_ibm_cga[o++] = ((c>>1)&1) * 0xFF;
 		pxplus_ibm_cga[o++] = ((c>>2)&1) * 0xFF;
@@ -287,795 +281,121 @@ void font_decode_custom_base64(void)
 	}
 }
 
+#define FUV(a,b,c) case a: *x=b; *y=c; break;
 
-void GetFontCoords(int id, int *x, int *y)
-{
-	switch(id)
-	{
-		case 0:     *x=0;     *y=0;   break;
-		case 1:     *x=8;     *y=0;   break;
-		case 2:     *x=16;    *y=0;   break;
-		case 3:     *x=24;    *y=0;   break;
-		case 4:     *x=32;    *y=0;   break;
-		case 5:     *x=40;    *y=0;   break;
-		case 6:     *x=48;    *y=0;   break;
-		case 7:     *x=56;    *y=0;   break;
-		case 8:     *x=64;    *y=0;   break;
-		case 9:     *x=72;    *y=0;   break;
-		case 10:    *x=80;    *y=0;   break;
-		case 11:    *x=88;    *y=0;   break;
-		case 12:    *x=96;    *y=0;   break;
-		case 13:    *x=104;   *y=0;   break;
-		case 14:    *x=112;   *y=0;   break;
-		case 15:    *x=120;   *y=0;   break;
-		case 16:    *x=128;   *y=0;   break;
-		case 17:    *x=136;   *y=0;   break;
-		case 18:    *x=144;   *y=0;   break;
-		case 19:    *x=152;   *y=0;   break;
-		case 20:    *x=160;   *y=0;   break;
-		case 21:    *x=168;   *y=0;   break;
-		case 22:    *x=176;   *y=0;   break;
-		case 23:    *x=184;   *y=0;   break;
-		case 24:    *x=192;   *y=0;   break;
-		case 25:    *x=200;   *y=0;   break;
-		case 26:    *x=208;   *y=0;   break;
-		case 27:    *x=216;   *y=0;   break;
-		case 28:    *x=224;   *y=0;   break;
-		case 29:    *x=232;   *y=0;   break;
-		case 30:    *x=240;   *y=0;   break;
-		case 31:    *x=248;   *y=0;   break;
-		case 32:    *x=0;     *y=8;   break;
-		case 33:    *x=8;     *y=8;   break;
-		case 34:    *x=16;    *y=8;   break;
-		case 35:    *x=24;    *y=8;   break;
-		case 36:    *x=32;    *y=8;   break;
-		case 37:    *x=40;    *y=8;   break;
-		case 38:    *x=48;    *y=8;   break;
-		case 39:    *x=56;    *y=8;   break;
-		case 40:    *x=64;    *y=8;   break;
-		case 41:    *x=72;    *y=8;   break;
-		case 42:    *x=80;    *y=8;   break;
-		case 43:    *x=88;    *y=8;   break;
-		case 44:    *x=96;    *y=8;   break;
-		case 45:    *x=104;   *y=8;   break;
-		case 46:    *x=112;   *y=8;   break;
-		case 47:    *x=120;   *y=8;   break;
-		case 48:    *x=128;   *y=8;   break;
-		case 49:    *x=136;   *y=8;   break;
-		case 50:    *x=144;   *y=8;   break;
-		case 51:    *x=152;   *y=8;   break;
-		case 52:    *x=160;   *y=8;   break;
-		case 53:    *x=168;   *y=8;   break;
-		case 54:    *x=176;   *y=8;   break;
-		case 55:    *x=184;   *y=8;   break;
-		case 56:    *x=192;   *y=8;   break;
-		case 57:    *x=200;   *y=8;   break;
-		case 58:    *x=208;   *y=8;   break;
-		case 59:    *x=216;   *y=8;   break;
-		case 60:    *x=224;   *y=8;   break;
-		case 61:    *x=232;   *y=8;   break;
-		case 62:    *x=240;   *y=8;   break;
-		case 63:    *x=248;   *y=8;   break;
-		case 64:    *x=0;     *y=16;  break;
-		case 65:    *x=8;     *y=16;  break;
-		case 66:    *x=16;    *y=16;  break;
-		case 67:    *x=24;    *y=16;  break;
-		case 68:    *x=32;    *y=16;  break;
-		case 69:    *x=40;    *y=16;  break;
-		case 70:    *x=48;    *y=16;  break;
-		case 71:    *x=56;    *y=16;  break;
-		case 72:    *x=64;    *y=16;  break;
-		case 73:    *x=72;    *y=16;  break;
-		case 74:    *x=80;    *y=16;  break;
-		case 75:    *x=88;    *y=16;  break;
-		case 76:    *x=96;    *y=16;  break;
-		case 77:    *x=104;   *y=16;  break;
-		case 78:    *x=112;   *y=16;  break;
-		case 79:    *x=120;   *y=16;  break;
-		case 80:    *x=128;   *y=16;  break;
-		case 81:    *x=136;   *y=16;  break;
-		case 82:    *x=144;   *y=16;  break;
-		case 83:    *x=152;   *y=16;  break;
-		case 84:    *x=160;   *y=16;  break;
-		case 85:    *x=168;   *y=16;  break;
-		case 86:    *x=176;   *y=16;  break;
-		case 87:    *x=184;   *y=16;  break;
-		case 88:    *x=192;   *y=16;  break;
-		case 89:    *x=200;   *y=16;  break;
-		case 90:    *x=208;   *y=16;  break;
-		case 91:    *x=216;   *y=16;  break;
-		case 92:    *x=224;   *y=16;  break;
-		case 93:    *x=232;   *y=16;  break;
-		case 94:    *x=240;   *y=16;  break;
-		case 95:    *x=248;   *y=16;  break;
-		case 96:    *x=0;     *y=24;  break;
-		case 97:    *x=8;     *y=24;  break;
-		case 98:    *x=16;    *y=24;  break;
-		case 99:    *x=24;    *y=24;  break;
-		case 100:   *x=32;    *y=24;  break;
-		case 101:   *x=40;    *y=24;  break;
-		case 102:   *x=48;    *y=24;  break;
-		case 103:   *x=56;    *y=24;  break;
-		case 104:   *x=64;    *y=24;  break;
-		case 105:   *x=72;    *y=24;  break;
-		case 106:   *x=80;    *y=24;  break;
-		case 107:   *x=88;    *y=24;  break;
-		case 108:   *x=96;    *y=24;  break;
-		case 109:   *x=104;   *y=24;  break;
-		case 110:   *x=112;   *y=24;  break;
-		case 111:   *x=120;   *y=24;  break;
-		case 112:   *x=128;   *y=24;  break;
-		case 113:   *x=136;   *y=24;  break;
-		case 114:   *x=144;   *y=24;  break;
-		case 115:   *x=152;   *y=24;  break;
-		case 116:   *x=160;   *y=24;  break;
-		case 117:   *x=168;   *y=24;  break;
-		case 118:   *x=176;   *y=24;  break;
-		case 119:   *x=184;   *y=24;  break;
-		case 120:   *x=192;   *y=24;  break;
-		case 121:   *x=200;   *y=24;  break;
-		case 122:   *x=208;   *y=24;  break;
-		case 123:   *x=216;   *y=24;  break;
-		case 124:   *x=224;   *y=24;  break;
-		case 125:   *x=232;   *y=24;  break;
-		case 126:   *x=240;   *y=24;  break;
-		case 127:   *x=248;   *y=24;  break;
-		case 160:   *x=0;     *y=32;  break;
-		case 161:   *x=8;     *y=32;  break;
-		case 162:   *x=16;    *y=32;  break;
-		case 163:   *x=24;    *y=32;  break;
-		case 164:   *x=32;    *y=32;  break;
-		case 165:   *x=40;    *y=32;  break;
-		case 166:   *x=48;    *y=32;  break;
-		case 167:   *x=56;    *y=32;  break;
-		case 168:   *x=64;    *y=32;  break;
-		case 169:   *x=72;    *y=32;  break;
-		case 170:   *x=80;    *y=32;  break;
-		case 171:   *x=88;    *y=32;  break;
-		case 172:   *x=96;    *y=32;  break;
-		case 173:   *x=104;   *y=32;  break;
-		case 174:   *x=112;   *y=32;  break;
-		case 175:   *x=120;   *y=32;  break;
-		case 176:   *x=128;   *y=32;  break;
-		case 177:   *x=136;   *y=32;  break;
-		case 178:   *x=144;   *y=32;  break;
-		case 179:   *x=152;   *y=32;  break;
-		case 180:   *x=160;   *y=32;  break;
-		case 181:   *x=168;   *y=32;  break;
-		case 182:   *x=176;   *y=32;  break;
-		case 183:   *x=184;   *y=32;  break;
-		case 184:   *x=192;   *y=32;  break;
-		case 185:   *x=200;   *y=32;  break;
-		case 186:   *x=208;   *y=32;  break;
-		case 187:   *x=216;   *y=32;  break;
-		case 188:   *x=224;   *y=32;  break;
-		case 189:   *x=232;   *y=32;  break;
-		case 190:   *x=240;   *y=32;  break;
-		case 191:   *x=248;   *y=32;  break;
-		case 192:   *x=0;     *y=40;  break;
-		case 193:   *x=8;     *y=40;  break;
-		case 194:   *x=16;    *y=40;  break;
-		case 195:   *x=24;    *y=40;  break;
-		case 196:   *x=32;    *y=40;  break;
-		case 197:   *x=40;    *y=40;  break;
-		case 198:   *x=48;    *y=40;  break;
-		case 199:   *x=56;    *y=40;  break;
-		case 200:   *x=64;    *y=40;  break;
-		case 201:   *x=72;    *y=40;  break;
-		case 202:   *x=80;    *y=40;  break;
-		case 203:   *x=88;    *y=40;  break;
-		case 204:   *x=96;    *y=40;  break;
-		case 205:   *x=104;   *y=40;  break;
-		case 206:   *x=112;   *y=40;  break;
-		case 207:   *x=120;   *y=40;  break;
-		case 208:   *x=128;   *y=40;  break;
-		case 209:   *x=136;   *y=40;  break;
-		case 210:   *x=144;   *y=40;  break;
-		case 211:   *x=152;   *y=40;  break;
-		case 212:   *x=160;   *y=40;  break;
-		case 213:   *x=168;   *y=40;  break;
-		case 214:   *x=176;   *y=40;  break;
-		case 215:   *x=184;   *y=40;  break;
-		case 216:   *x=192;   *y=40;  break;
-		case 217:   *x=200;   *y=40;  break;
-		case 218:   *x=208;   *y=40;  break;
-		case 219:   *x=216;   *y=40;  break;
-		case 220:   *x=224;   *y=40;  break;
-		case 221:   *x=232;   *y=40;  break;
-		case 222:   *x=240;   *y=40;  break;
-		case 223:   *x=248;   *y=40;  break;
-		case 224:   *x=0;     *y=48;  break;
-		case 225:   *x=8;     *y=48;  break;
-		case 226:   *x=16;    *y=48;  break;
-		case 227:   *x=24;    *y=48;  break;
-		case 228:   *x=32;    *y=48;  break;
-		case 229:   *x=40;    *y=48;  break;
-		case 230:   *x=48;    *y=48;  break;
-		case 231:   *x=56;    *y=48;  break;
-		case 232:   *x=64;    *y=48;  break;
-		case 233:   *x=72;    *y=48;  break;
-		case 234:   *x=80;    *y=48;  break;
-		case 235:   *x=88;    *y=48;  break;
-		case 236:   *x=96;    *y=48;  break;
-		case 237:   *x=104;   *y=48;  break;
-		case 238:   *x=112;   *y=48;  break;
-		case 239:   *x=120;   *y=48;  break;
-		case 240:   *x=128;   *y=48;  break;
-		case 241:   *x=136;   *y=48;  break;
-		case 242:   *x=144;   *y=48;  break;
-		case 243:   *x=152;   *y=48;  break;
-		case 244:   *x=160;   *y=48;  break;
-		case 245:   *x=168;   *y=48;  break;
-		case 246:   *x=176;   *y=48;  break;
-		case 247:   *x=184;   *y=48;  break;
-		case 248:   *x=192;   *y=48;  break;
-		case 249:   *x=200;   *y=48;  break;
-		case 250:   *x=208;   *y=48;  break;
-		case 251:   *x=216;   *y=48;  break;
-		case 252:   *x=224;   *y=48;  break;
-		case 253:   *x=232;   *y=48;  break;
-		case 254:   *x=240;   *y=48;  break;
-		case 255:   *x=248;   *y=48;  break;
-		case 256:   *x=0;     *y=56;  break;
-		case 257:   *x=8;     *y=56;  break;
-		case 258:   *x=16;    *y=56;  break;
-		case 259:   *x=24;    *y=56;  break;
-		case 260:   *x=32;    *y=56;  break;
-		case 261:   *x=40;    *y=56;  break;
-		case 262:   *x=48;    *y=56;  break;
-		case 263:   *x=56;    *y=56;  break;
-		case 264:   *x=64;    *y=56;  break;
-		case 265:   *x=72;    *y=56;  break;
-		case 266:   *x=80;    *y=56;  break;
-		case 267:   *x=88;    *y=56;  break;
-		case 268:   *x=96;    *y=56;  break;
-		case 269:   *x=104;   *y=56;  break;
-		case 270:   *x=112;   *y=56;  break;
-		case 271:   *x=120;   *y=56;  break;
-		case 272:   *x=128;   *y=56;  break;
-		case 273:   *x=136;   *y=56;  break;
-		case 274:   *x=144;   *y=56;  break;
-		case 275:   *x=152;   *y=56;  break;
-		case 276:   *x=160;   *y=56;  break;
-		case 277:   *x=168;   *y=56;  break;
-		case 278:   *x=176;   *y=56;  break;
-		case 279:   *x=184;   *y=56;  break;
-		case 280:   *x=192;   *y=56;  break;
-		case 281:   *x=200;   *y=56;  break;
-		case 282:   *x=208;   *y=56;  break;
-		case 283:   *x=216;   *y=56;  break;
-		case 284:   *x=224;   *y=56;  break;
-		case 285:   *x=232;   *y=56;  break;
-		case 286:   *x=240;   *y=56;  break;
-		case 287:   *x=248;   *y=56;  break;
-		case 288:   *x=0;     *y=64;  break;
-		case 289:   *x=8;     *y=64;  break;
-		case 290:   *x=16;    *y=64;  break;
-		case 291:   *x=24;    *y=64;  break;
-		case 292:   *x=32;    *y=64;  break;
-		case 293:   *x=40;    *y=64;  break;
-		case 294:   *x=48;    *y=64;  break;
-		case 295:   *x=56;    *y=64;  break;
-		case 296:   *x=64;    *y=64;  break;
-		case 297:   *x=72;    *y=64;  break;
-		case 298:   *x=80;    *y=64;  break;
-		case 299:   *x=88;    *y=64;  break;
-		case 300:   *x=96;    *y=64;  break;
-		case 301:   *x=104;   *y=64;  break;
-		case 302:   *x=112;   *y=64;  break;
-		case 303:   *x=120;   *y=64;  break;
-		case 304:   *x=128;   *y=64;  break;
-		case 305:   *x=136;   *y=64;  break;
-		case 306:   *x=144;   *y=64;  break;
-		case 307:   *x=152;   *y=64;  break;
-		case 308:   *x=160;   *y=64;  break;
-		case 309:   *x=168;   *y=64;  break;
-		case 310:   *x=176;   *y=64;  break;
-		case 311:   *x=184;   *y=64;  break;
-		case 312:   *x=192;   *y=64;  break;
-		case 313:   *x=200;   *y=64;  break;
-		case 314:   *x=208;   *y=64;  break;
-		case 315:   *x=216;   *y=64;  break;
-		case 316:   *x=224;   *y=64;  break;
-		case 317:   *x=232;   *y=64;  break;
-		case 318:   *x=240;   *y=64;  break;
-		case 319:   *x=248;   *y=64;  break;
-		case 320:   *x=0;     *y=72;  break;
-		case 321:   *x=8;     *y=72;  break;
-		case 322:   *x=16;    *y=72;  break;
-		case 323:   *x=24;    *y=72;  break;
-		case 324:   *x=32;    *y=72;  break;
-		case 325:   *x=40;    *y=72;  break;
-		case 326:   *x=48;    *y=72;  break;
-		case 327:   *x=56;    *y=72;  break;
-		case 328:   *x=64;    *y=72;  break;
-		case 329:   *x=72;    *y=72;  break;
-		case 330:   *x=80;    *y=72;  break;
-		case 331:   *x=88;    *y=72;  break;
-		case 332:   *x=96;    *y=72;  break;
-		case 333:   *x=104;   *y=72;  break;
-		case 334:   *x=112;   *y=72;  break;
-		case 335:   *x=120;   *y=72;  break;
-		case 336:   *x=128;   *y=72;  break;
-		case 337:   *x=136;   *y=72;  break;
-		case 338:   *x=144;   *y=72;  break;
-		case 339:   *x=152;   *y=72;  break;
-		case 340:   *x=160;   *y=72;  break;
-		case 341:   *x=168;   *y=72;  break;
-		case 342:   *x=176;   *y=72;  break;
-		case 343:   *x=184;   *y=72;  break;
-		case 344:   *x=192;   *y=72;  break;
-		case 345:   *x=200;   *y=72;  break;
-		case 346:   *x=208;   *y=72;  break;
-		case 347:   *x=216;   *y=72;  break;
-		case 348:   *x=224;   *y=72;  break;
-		case 349:   *x=232;   *y=72;  break;
-		case 350:   *x=240;   *y=72;  break;
-		case 351:   *x=248;   *y=72;  break;
-		case 352:   *x=0;     *y=80;  break;
-		case 353:   *x=8;     *y=80;  break;
-		case 354:   *x=16;    *y=80;  break;
-		case 355:   *x=24;    *y=80;  break;
-		case 356:   *x=32;    *y=80;  break;
-		case 357:   *x=40;    *y=80;  break;
-		case 358:   *x=48;    *y=80;  break;
-		case 359:   *x=56;    *y=80;  break;
-		case 360:   *x=64;    *y=80;  break;
-		case 361:   *x=72;    *y=80;  break;
-		case 362:   *x=80;    *y=80;  break;
-		case 363:   *x=88;    *y=80;  break;
-		case 364:   *x=96;    *y=80;  break;
-		case 365:   *x=104;   *y=80;  break;
-		case 366:   *x=112;   *y=80;  break;
-		case 367:   *x=120;   *y=80;  break;
-		case 368:   *x=128;   *y=80;  break;
-		case 369:   *x=136;   *y=80;  break;
-		case 370:   *x=144;   *y=80;  break;
-		case 371:   *x=152;   *y=80;  break;
-		case 372:   *x=160;   *y=80;  break;
-		case 373:   *x=168;   *y=80;  break;
-		case 374:   *x=176;   *y=80;  break;
-		case 375:   *x=184;   *y=80;  break;
-		case 376:   *x=192;   *y=80;  break;
-		case 377:   *x=200;   *y=80;  break;
-		case 378:   *x=208;   *y=80;  break;
-		case 379:   *x=216;   *y=80;  break;
-		case 380:   *x=224;   *y=80;  break;
-		case 381:   *x=232;   *y=80;  break;
-		case 382:   *x=240;   *y=80;  break;
-		case 383:   *x=248;   *y=80;  break;
-		case 402:   *x=0;     *y=88;  break;
-		case 417:   *x=8;     *y=88;  break;
-		case 439:   *x=16;    *y=88;  break;
-		case 506:   *x=24;    *y=88;  break;
-		case 507:   *x=32;    *y=88;  break;
-		case 508:   *x=40;    *y=88;  break;
-		case 509:   *x=48;    *y=88;  break;
-		case 510:   *x=56;    *y=88;  break;
-		case 511:   *x=64;    *y=88;  break;
-		case 536:   *x=72;    *y=88;  break;
-		case 537:   *x=80;    *y=88;  break;
-		case 538:   *x=88;    *y=88;  break;
-		case 539:   *x=96;    *y=88;  break;
-		case 593:   *x=104;   *y=88;  break;
-		case 632:   *x=112;   *y=88;  break;
-		case 710:   *x=120;   *y=88;  break;
-		case 711:   *x=128;   *y=88;  break;
-		case 713:   *x=136;   *y=88;  break;
-		case 728:   *x=144;   *y=88;  break;
-		case 729:   *x=152;   *y=88;  break;
-		case 730:   *x=160;   *y=88;  break;
-		case 731:   *x=168;   *y=88;  break;
-		case 732:   *x=176;   *y=88;  break;
-		case 733:   *x=184;   *y=88;  break;
-		case 894:   *x=192;   *y=88;  break;
-		case 900:   *x=200;   *y=88;  break;
-		case 901:   *x=208;   *y=88;  break;
-		case 902:   *x=216;   *y=88;  break;
-		case 903:   *x=224;   *y=88;  break;
-		case 904:   *x=232;   *y=88;  break;
-		case 905:   *x=240;   *y=88;  break;
-		case 906:   *x=248;   *y=88;  break;
-		case 908:   *x=0;     *y=96;  break;
-		case 910:   *x=8;     *y=96;  break;
-		case 911:   *x=16;    *y=96;  break;
-		case 912:   *x=24;    *y=96;  break;
-		case 913:   *x=32;    *y=96;  break;
-		case 914:   *x=40;    *y=96;  break;
-		case 915:   *x=48;    *y=96;  break;
-		case 916:   *x=56;    *y=96;  break;
-		case 917:   *x=64;    *y=96;  break;
-		case 918:   *x=72;    *y=96;  break;
-		case 919:   *x=80;    *y=96;  break;
-		case 920:   *x=88;    *y=96;  break;
-		case 921:   *x=96;    *y=96;  break;
-		case 922:   *x=104;   *y=96;  break;
-		case 923:   *x=112;   *y=96;  break;
-		case 924:   *x=120;   *y=96;  break;
-		case 925:   *x=128;   *y=96;  break;
-		case 926:   *x=136;   *y=96;  break;
-		case 927:   *x=144;   *y=96;  break;
-		case 928:   *x=152;   *y=96;  break;
-		case 929:   *x=160;   *y=96;  break;
-		case 931:   *x=168;   *y=96;  break;
-		case 932:   *x=176;   *y=96;  break;
-		case 933:   *x=184;   *y=96;  break;
-		case 934:   *x=192;   *y=96;  break;
-		case 935:   *x=200;   *y=96;  break;
-		case 936:   *x=208;   *y=96;  break;
-		case 937:   *x=216;   *y=96;  break;
-		case 938:   *x=224;   *y=96;  break;
-		case 939:   *x=232;   *y=96;  break;
-		case 940:   *x=240;   *y=96;  break;
-		case 941:   *x=248;   *y=96;  break;
-		case 942:   *x=0;     *y=104; break;
-		case 943:   *x=8;     *y=104; break;
-		case 944:   *x=16;    *y=104; break;
-		case 945:   *x=24;    *y=104; break;
-		case 946:   *x=32;    *y=104; break;
-		case 947:   *x=40;    *y=104; break;
-		case 948:   *x=48;    *y=104; break;
-		case 949:   *x=56;    *y=104; break;
-		case 950:   *x=64;    *y=104; break;
-		case 951:   *x=72;    *y=104; break;
-		case 952:   *x=80;    *y=104; break;
-		case 953:   *x=88;    *y=104; break;
-		case 954:   *x=96;    *y=104; break;
-		case 955:   *x=104;   *y=104; break;
-		case 956:   *x=112;   *y=104; break;
-		case 957:   *x=120;   *y=104; break;
-		case 958:   *x=128;   *y=104; break;
-		case 959:   *x=136;   *y=104; break;
-		case 960:   *x=144;   *y=104; break;
-		case 961:   *x=152;   *y=104; break;
-		case 962:   *x=160;   *y=104; break;
-		case 963:   *x=168;   *y=104; break;
-		case 964:   *x=176;   *y=104; break;
-		case 965:   *x=184;   *y=104; break;
-		case 966:   *x=192;   *y=104; break;
-		case 967:   *x=200;   *y=104; break;
-		case 968:   *x=208;   *y=104; break;
-		case 969:   *x=216;   *y=104; break;
-		case 970:   *x=224;   *y=104; break;
-		case 971:   *x=232;   *y=104; break;
-		case 972:   *x=240;   *y=104; break;
-		case 973:   *x=248;   *y=104; break;
-		case 974:   *x=0;     *y=112; break;
-		case 976:   *x=8;     *y=112; break;
-		case 1012:  *x=16;    *y=112; break;
-		case 1024:  *x=24;    *y=112; break;
-		case 1025:  *x=32;    *y=112; break;
-		case 1026:  *x=40;    *y=112; break;
-		case 1027:  *x=48;    *y=112; break;
-		case 1028:  *x=56;    *y=112; break;
-		case 1029:  *x=64;    *y=112; break;
-		case 1030:  *x=72;    *y=112; break;
-		case 1031:  *x=80;    *y=112; break;
-		case 1032:  *x=88;    *y=112; break;
-		case 1033:  *x=96;    *y=112; break;
-		case 1034:  *x=104;   *y=112; break;
-		case 1035:  *x=112;   *y=112; break;
-		case 1036:  *x=120;   *y=112; break;
-		case 1037:  *x=128;   *y=112; break;
-		case 1038:  *x=136;   *y=112; break;
-		case 1039:  *x=144;   *y=112; break;
-		case 1040:  *x=152;   *y=112; break;
-		case 1041:  *x=160;   *y=112; break;
-		case 1042:  *x=168;   *y=112; break;
-		case 1043:  *x=176;   *y=112; break;
-		case 1044:  *x=184;   *y=112; break;
-		case 1045:  *x=192;   *y=112; break;
-		case 1046:  *x=200;   *y=112; break;
-		case 1047:  *x=208;   *y=112; break;
-		case 1048:  *x=216;   *y=112; break;
-		case 1049:  *x=224;   *y=112; break;
-		case 1050:  *x=232;   *y=112; break;
-		case 1051:  *x=240;   *y=112; break;
-		case 1052:  *x=248;   *y=112; break;
-		case 1053:  *x=0;     *y=120; break;
-		case 1054:  *x=8;     *y=120; break;
-		case 1055:  *x=16;    *y=120; break;
-		case 1056:  *x=24;    *y=120; break;
-		case 1057:  *x=32;    *y=120; break;
-		case 1058:  *x=40;    *y=120; break;
-		case 1059:  *x=48;    *y=120; break;
-		case 1060:  *x=56;    *y=120; break;
-		case 1061:  *x=64;    *y=120; break;
-		case 1062:  *x=72;    *y=120; break;
-		case 1063:  *x=80;    *y=120; break;
-		case 1064:  *x=88;    *y=120; break;
-		case 1065:  *x=96;    *y=120; break;
-		case 1066:  *x=104;   *y=120; break;
-		case 1067:  *x=112;   *y=120; break;
-		case 1068:  *x=120;   *y=120; break;
-		case 1069:  *x=128;   *y=120; break;
-		case 1070:  *x=136;   *y=120; break;
-		case 1071:  *x=144;   *y=120; break;
-		case 1072:  *x=152;   *y=120; break;
-		case 1073:  *x=160;   *y=120; break;
-		case 1074:  *x=168;   *y=120; break;
-		case 1075:  *x=176;   *y=120; break;
-		case 1076:  *x=184;   *y=120; break;
-		case 1077:  *x=192;   *y=120; break;
-		case 1078:  *x=200;   *y=120; break;
-		case 1079:  *x=208;   *y=120; break;
-		case 1080:  *x=216;   *y=120; break;
-		case 1081:  *x=224;   *y=120; break;
-		case 1082:  *x=232;   *y=120; break;
-		case 1083:  *x=240;   *y=120; break;
-		case 1084:  *x=248;   *y=120; break;
-		case 1085:  *x=0;     *y=128; break;
-		case 1086:  *x=8;     *y=128; break;
-		case 1087:  *x=16;    *y=128; break;
-		case 1088:  *x=24;    *y=128; break;
-		case 1089:  *x=32;    *y=128; break;
-		case 1090:  *x=40;    *y=128; break;
-		case 1091:  *x=48;    *y=128; break;
-		case 1092:  *x=56;    *y=128; break;
-		case 1093:  *x=64;    *y=128; break;
-		case 1094:  *x=72;    *y=128; break;
-		case 1095:  *x=80;    *y=128; break;
-		case 1096:  *x=88;    *y=128; break;
-		case 1097:  *x=96;    *y=128; break;
-		case 1098:  *x=104;   *y=128; break;
-		case 1099:  *x=112;   *y=128; break;
-		case 1100:  *x=120;   *y=128; break;
-		case 1101:  *x=128;   *y=128; break;
-		case 1102:  *x=136;   *y=128; break;
-		case 1103:  *x=144;   *y=128; break;
-		case 1104:  *x=152;   *y=128; break;
-		case 1105:  *x=160;   *y=128; break;
-		case 1106:  *x=168;   *y=128; break;
-		case 1107:  *x=176;   *y=128; break;
-		case 1108:  *x=184;   *y=128; break;
-		case 1109:  *x=192;   *y=128; break;
-		case 1110:  *x=200;   *y=128; break;
-		case 1111:  *x=208;   *y=128; break;
-		case 1112:  *x=216;   *y=128; break;
-		case 1113:  *x=224;   *y=128; break;
-		case 1114:  *x=232;   *y=128; break;
-		case 1115:  *x=240;   *y=128; break;
-		case 1116:  *x=248;   *y=128; break;
-		case 1117:  *x=0;     *y=136; break;
-		case 1118:  *x=8;     *y=136; break;
-		case 1119:  *x=16;    *y=136; break;
-		case 1168:  *x=24;    *y=136; break;
-		case 1169:  *x=32;    *y=136; break;
-		case 1470:  *x=40;    *y=136; break;
-		case 1488:  *x=48;    *y=136; break;
-		case 1489:  *x=56;    *y=136; break;
-		case 1490:  *x=64;    *y=136; break;
-		case 1491:  *x=72;    *y=136; break;
-		case 1492:  *x=80;    *y=136; break;
-		case 1493:  *x=88;    *y=136; break;
-		case 1494:  *x=96;    *y=136; break;
-		case 1495:  *x=104;   *y=136; break;
-		case 1496:  *x=112;   *y=136; break;
-		case 1497:  *x=120;   *y=136; break;
-		case 1498:  *x=128;   *y=136; break;
-		case 1499:  *x=136;   *y=136; break;
-		case 1500:  *x=144;   *y=136; break;
-		case 1501:  *x=152;   *y=136; break;
-		case 1502:  *x=160;   *y=136; break;
-		case 1503:  *x=168;   *y=136; break;
-		case 1504:  *x=176;   *y=136; break;
-		case 1505:  *x=184;   *y=136; break;
-		case 1506:  *x=192;   *y=136; break;
-		case 1507:  *x=200;   *y=136; break;
-		case 1508:  *x=208;   *y=136; break;
-		case 1509:  *x=216;   *y=136; break;
-		case 1510:  *x=224;   *y=136; break;
-		case 1511:  *x=232;   *y=136; break;
-		case 1512:  *x=240;   *y=136; break;
-		case 1513:  *x=248;   *y=136; break;
-		case 1514:  *x=0;     *y=144; break;
-		case 1520:  *x=8;     *y=144; break;
-		case 1521:  *x=16;    *y=144; break;
-		case 1522:  *x=24;    *y=144; break;
-		case 1523:  *x=32;    *y=144; break;
-		case 1524:  *x=40;    *y=144; break;
-		case 7451:  *x=48;    *y=144; break;
-		case 7462:  *x=56;    *y=144; break;
-		case 7464:  *x=64;    *y=144; break;
-		case 7808:  *x=72;    *y=144; break;
-		case 7809:  *x=80;    *y=144; break;
-		case 7810:  *x=88;    *y=144; break;
-		case 7811:  *x=96;    *y=144; break;
-		case 7812:  *x=104;   *y=144; break;
-		case 7813:  *x=112;   *y=144; break;
-		case 7839:  *x=120;   *y=144; break;
-		case 7922:  *x=128;   *y=144; break;
-		case 7923:  *x=136;   *y=144; break;
-		case 8208:  *x=144;   *y=144; break;
-		case 8210:  *x=152;   *y=144; break;
-		case 8211:  *x=160;   *y=144; break;
-		case 8212:  *x=168;   *y=144; break;
-		case 8213:  *x=176;   *y=144; break;
-		case 8215:  *x=184;   *y=144; break;
-		case 8216:  *x=192;   *y=144; break;
-		case 8217:  *x=200;   *y=144; break;
-		case 8218:  *x=208;   *y=144; break;
-		case 8219:  *x=216;   *y=144; break;
-		case 8220:  *x=224;   *y=144; break;
-		case 8221:  *x=232;   *y=144; break;
-		case 8222:  *x=240;   *y=144; break;
-		case 8223:  *x=248;   *y=144; break;
-		case 8224:  *x=0;     *y=152; break;
-		case 8225:  *x=8;     *y=152; break;
-		case 8226:  *x=16;    *y=152; break;
-		case 8230:  *x=24;    *y=152; break;
-		case 8231:  *x=32;    *y=152; break;
-		case 8240:  *x=40;    *y=152; break;
-		case 8242:  *x=48;    *y=152; break;
-		case 8243:  *x=56;    *y=152; break;
-		case 8245:  *x=64;    *y=152; break;
-		case 8249:  *x=72;    *y=152; break;
-		case 8250:  *x=80;    *y=152; break;
-		case 8252:  *x=88;    *y=152; break;
-		case 8254:  *x=96;    *y=152; break;
-		case 8255:  *x=104;   *y=152; break;
-		case 8256:  *x=112;   *y=152; break;
-		case 8260:  *x=120;   *y=152; break;
-		case 8276:  *x=128;   *y=152; break;
-		case 8308:  *x=136;   *y=152; break;
-		case 8309:  *x=144;   *y=152; break;
-		case 8310:  *x=152;   *y=152; break;
-		case 8311:  *x=160;   *y=152; break;
-		case 8312:  *x=168;   *y=152; break;
-		case 8313:  *x=176;   *y=152; break;
-		case 8314:  *x=184;   *y=152; break;
-		case 8315:  *x=192;   *y=152; break;
-		case 8319:  *x=200;   *y=152; break;
-		case 8321:  *x=208;   *y=152; break;
-		case 8322:  *x=216;   *y=152; break;
-		case 8323:  *x=224;   *y=152; break;
-		case 8324:  *x=232;   *y=152; break;
-		case 8325:  *x=240;   *y=152; break;
-		case 8326:  *x=248;   *y=152; break;
-		case 8327:  *x=0;     *y=160; break;
-		case 8328:  *x=8;     *y=160; break;
-		case 8329:  *x=16;    *y=160; break;
-		case 8330:  *x=24;    *y=160; break;
-		case 8331:  *x=32;    *y=160; break;
-		case 8355:  *x=40;    *y=160; break;
-		case 8356:  *x=48;    *y=160; break;
-		case 8359:  *x=56;    *y=160; break;
-		case 8362:  *x=64;    *y=160; break;
-		case 8364:  *x=72;    *y=160; break;
-		case 8453:  *x=80;    *y=160; break;
-		case 8467:  *x=88;    *y=160; break;
-		case 8470:  *x=96;    *y=160; break;
-		case 8482:  *x=104;   *y=160; break;
-		case 8486:  *x=112;   *y=160; break;
-		case 8494:  *x=120;   *y=160; break;
-		case 8528:  *x=128;   *y=160; break;
-		case 8529:  *x=136;   *y=160; break;
-		case 8531:  *x=144;   *y=160; break;
-		case 8532:  *x=152;   *y=160; break;
-		case 8533:  *x=160;   *y=160; break;
-		case 8534:  *x=168;   *y=160; break;
-		case 8535:  *x=176;   *y=160; break;
-		case 8536:  *x=184;   *y=160; break;
-		case 8537:  *x=192;   *y=160; break;
-		case 8538:  *x=200;   *y=160; break;
-		case 8539:  *x=208;   *y=160; break;
-		case 8540:  *x=216;   *y=160; break;
-		case 8541:  *x=224;   *y=160; break;
-		case 8542:  *x=232;   *y=160; break;
-		case 8592:  *x=240;   *y=160; break;
-		case 8593:  *x=248;   *y=160; break;
-		case 8594:  *x=0;     *y=168; break;
-		case 8595:  *x=8;     *y=168; break;
-		case 8596:  *x=16;    *y=168; break;
-		case 8597:  *x=24;    *y=168; break;
-		case 8616:  *x=32;    *y=168; break;
-		case 8706:  *x=40;    *y=168; break;
-		case 8709:  *x=48;    *y=168; break;
-		case 8710:  *x=56;    *y=168; break;
-		case 8712:  *x=64;    *y=168; break;
-		case 8719:  *x=72;    *y=168; break;
-		case 8721:  *x=80;    *y=168; break;
-		case 8722:  *x=88;    *y=168; break;
-		case 8725:  *x=96;    *y=168; break;
-		case 8729:  *x=104;   *y=168; break;
-		case 8730:  *x=112;   *y=168; break;
-		case 8734:  *x=120;   *y=168; break;
-		case 8735:  *x=128;   *y=168; break;
-		case 8745:  *x=136;   *y=168; break;
-		case 8747:  *x=144;   *y=168; break;
-		case 8776:  *x=152;   *y=168; break;
-		case 8800:  *x=160;   *y=168; break;
-		case 8801:  *x=168;   *y=168; break;
-		case 8804:  *x=176;   *y=168; break;
-		case 8805:  *x=184;   *y=168; break;
-		case 8857:  *x=192;   *y=168; break;
-		case 8960:  *x=200;   *y=168; break;
-		case 8962:  *x=208;   *y=168; break;
-		case 8976:  *x=216;   *y=168; break;
-		case 8992:  *x=224;   *y=168; break;
-		case 8993:  *x=232;   *y=168; break;
-		case 9472:  *x=240;   *y=168; break;
-		case 9474:  *x=248;   *y=168; break;
-		case 9484:  *x=0;     *y=176; break;
-		case 9488:  *x=8;     *y=176; break;
-		case 9492:  *x=16;    *y=176; break;
-		case 9496:  *x=24;    *y=176; break;
-		case 9500:  *x=32;    *y=176; break;
-		case 9508:  *x=40;    *y=176; break;
-		case 9516:  *x=48;    *y=176; break;
-		case 9524:  *x=56;    *y=176; break;
-		case 9532:  *x=64;    *y=176; break;
-		case 9552:  *x=72;    *y=176; break;
-		case 9553:  *x=80;    *y=176; break;
-		case 9554:  *x=88;    *y=176; break;
-		case 9555:  *x=96;    *y=176; break;
-		case 9556:  *x=104;   *y=176; break;
-		case 9557:  *x=112;   *y=176; break;
-		case 9558:  *x=120;   *y=176; break;
-		case 9559:  *x=128;   *y=176; break;
-		case 9560:  *x=136;   *y=176; break;
-		case 9561:  *x=144;   *y=176; break;
-		case 9562:  *x=152;   *y=176; break;
-		case 9563:  *x=160;   *y=176; break;
-		case 9564:  *x=168;   *y=176; break;
-		case 9565:  *x=176;   *y=176; break;
-		case 9566:  *x=184;   *y=176; break;
-		case 9567:  *x=192;   *y=176; break;
-		case 9568:  *x=200;   *y=176; break;
-		case 9569:  *x=208;   *y=176; break;
-		case 9570:  *x=216;   *y=176; break;
-		case 9571:  *x=224;   *y=176; break;
-		case 9572:  *x=232;   *y=176; break;
-		case 9573:  *x=240;   *y=176; break;
-		case 9574:  *x=248;   *y=176; break;
-		case 9575:  *x=0;     *y=184; break;
-		case 9576:  *x=8;     *y=184; break;
-		case 9577:  *x=16;    *y=184; break;
-		case 9578:  *x=24;    *y=184; break;
-		case 9579:  *x=32;    *y=184; break;
-		case 9580:  *x=40;    *y=184; break;
-		case 9600:  *x=48;    *y=184; break;
-		case 9601:  *x=56;    *y=184; break;
-		case 9604:  *x=64;    *y=184; break;
-		case 9608:  *x=72;    *y=184; break;
-		case 9612:  *x=80;    *y=184; break;
-		case 9616:  *x=88;    *y=184; break;
-		case 9617:  *x=96;    *y=184; break;
-		case 9618:  *x=104;   *y=184; break;
-		case 9619:  *x=112;   *y=184; break;
-		case 9632:  *x=120;   *y=184; break;
-		case 9633:  *x=128;   *y=184; break;
-		case 9642:  *x=136;   *y=184; break;
-		case 9643:  *x=144;   *y=184; break;
-		case 9644:  *x=152;   *y=184; break;
-		case 9650:  *x=160;   *y=184; break;
-		case 9658:  *x=168;   *y=184; break;
-		case 9660:  *x=176;   *y=184; break;
-		case 9668:  *x=184;   *y=184; break;
-		case 9674:  *x=192;   *y=184; break;
-		case 9675:  *x=200;   *y=184; break;
-		case 9679:  *x=208;   *y=184; break;
-		case 9688:  *x=216;   *y=184; break;
-		case 9689:  *x=224;   *y=184; break;
-		case 9702:  *x=232;   *y=184; break;
-		case 9786:  *x=240;   *y=184; break;
-		case 9787:  *x=248;   *y=184; break;
-		case 9788:  *x=0;     *y=192; break;
-		case 9792:  *x=8;     *y=192; break;
-		case 9794:  *x=16;    *y=192; break;
-		case 9824:  *x=24;    *y=192; break;
-		case 9827:  *x=32;    *y=192; break;
-		case 9829:  *x=40;    *y=192; break;
-		case 9830:  *x=48;    *y=192; break;
-		case 9834:  *x=56;    *y=192; break;
-		case 9835:  *x=64;    *y=192; break;
-		case 10003: *x=72;    *y=192; break;
-		case 64257: *x=80;    *y=192; break;
-		case 64258: *x=88;    *y=192; break;
-		case 65533: *x=96;    *y=192; break;
-		default: *x = 96; *y = 192; break;
-	}
-}
+void GetFontCoords(int id, int *x, int *y) { switch(id) {
+FUV(0,    0,  0  )FUV(1,    8,  0  )FUV(2,    16, 0  )FUV(3,    24, 0  )FUV(4,    32, 0  )FUV(5,    40, 0  )FUV(6,    48, 0  )
+FUV(7,    56, 0  )FUV(8,    64, 0  )FUV(9,    72, 0  )FUV(10,   80, 0  )FUV(11,   88, 0  )FUV(12,   96, 0  )FUV(13,   104,0  )
+FUV(14,   112,0  )FUV(15,   120,0  )FUV(16,   128,0  )FUV(17,   136,0  )FUV(18,   144,0  )FUV(19,   152,0  )FUV(20,   160,0  )
+FUV(21,   168,0  )FUV(22,   176,0  )FUV(23,   184,0  )FUV(24,   192,0  )FUV(25,   200,0  )FUV(26,   208,0  )FUV(27,   216,0  )
+FUV(28,   224,0  )FUV(29,   232,0  )FUV(30,   240,0  )FUV(31,   248,0  )FUV(32,   0,  8  )FUV(33,   8,  8  )FUV(34,   16, 8  )
+FUV(35,   24, 8  )FUV(36,   32, 8  )FUV(37,   40, 8  )FUV(38,   48, 8  )FUV(39,   56, 8  )FUV(40,   64, 8  )FUV(41,   72, 8  )
+FUV(42,   80, 8  )FUV(43,   88, 8  )FUV(44,   96, 8  )FUV(45,   104,8  )FUV(46,   112,8  )FUV(47,   120,8  )FUV(48,   128,8  )
+FUV(49,   136,8  )FUV(50,   144,8  )FUV(51,   152,8  )FUV(52,   160,8  )FUV(53,   168,8  )FUV(54,   176,8  )FUV(55,   184,8  )
+FUV(56,   192,8  )FUV(57,   200,8  )FUV(58,   208,8  )FUV(59,   216,8  )FUV(60,   224,8  )FUV(61,   232,8  )FUV(62,   240,8  )
+FUV(63,   248,8  )FUV(64,   0,  16 )FUV(65,   8,  16 )FUV(66,   16, 16 )FUV(67,   24, 16 )FUV(68,   32, 16 )FUV(69,   40, 16 )
+FUV(70,   48, 16 )FUV(71,   56, 16 )FUV(72,   64, 16 )FUV(73,   72, 16 )FUV(74,   80, 16 )FUV(75,   88, 16 )FUV(76,   96, 16 )
+FUV(77,   104,16 )FUV(78,   112,16 )FUV(79,   120,16 )FUV(80,   128,16 )FUV(81,   136,16 )FUV(82,   144,16 )FUV(83,   152,16 )
+FUV(84,   160,16 )FUV(85,   168,16 )FUV(86,   176,16 )FUV(87,   184,16 )FUV(88,   192,16 )FUV(89,   200,16 )FUV(90,   208,16 )
+FUV(91,   216,16 )FUV(92,   224,16 )FUV(93,   232,16 )FUV(94,   240,16 )FUV(95,   248,16 )FUV(96,   0,  24 )FUV(97,   8,  24 )
+FUV(98,   16, 24 )FUV(99,   24, 24 )FUV(100,  32, 24 )FUV(101,  40, 24 )FUV(102,  48, 24 )FUV(103,  56, 24 )FUV(104,  64, 24 )
+FUV(105,  72, 24 )FUV(106,  80, 24 )FUV(107,  88, 24 )FUV(108,  96, 24 )FUV(109,  104,24 )FUV(110,  112,24 )FUV(111,  120,24 )
+FUV(112,  128,24 )FUV(113,  136,24 )FUV(114,  144,24 )FUV(115,  152,24 )FUV(116,  160,24 )FUV(117,  168,24 )FUV(118,  176,24 )
+FUV(119,  184,24 )FUV(120,  192,24 )FUV(121,  200,24 )FUV(122,  208,24 )FUV(123,  216,24 )FUV(124,  224,24 )FUV(125,  232,24 )
+FUV(126,  240,24 )FUV(127,  248,24 )FUV(160,  0,  32 )FUV(161,  8,  32 )FUV(162,  16, 32 )FUV(163,  24, 32 )FUV(164,  32, 32 )
+FUV(165,  40, 32 )FUV(166,  48, 32 )FUV(167,  56, 32 )FUV(168,  64, 32 )FUV(169,  72, 32 )FUV(170,  80, 32 )FUV(171,  88, 32 )
+FUV(172,  96, 32 )FUV(173,  104,32 )FUV(174,  112,32 )FUV(175,  120,32 )FUV(176,  128,32 )FUV(177,  136,32 )FUV(178,  144,32 )
+FUV(179,  152,32 )FUV(180,  160,32 )FUV(181,  168,32 )FUV(182,  176,32 )FUV(183,  184,32 )FUV(184,  192,32 )FUV(185,  200,32 )
+FUV(186,  208,32 )FUV(187,  216,32 )FUV(188,  224,32 )FUV(189,  232,32 )FUV(190,  240,32 )FUV(191,  248,32 )FUV(192,  0,  40 )
+FUV(193,  8,  40 )FUV(194,  16, 40 )FUV(195,  24, 40 )FUV(196,  32, 40 )FUV(197,  40, 40 )FUV(198,  48, 40 )FUV(199,  56, 40 )
+FUV(200,  64, 40 )FUV(201,  72, 40 )FUV(202,  80, 40 )FUV(203,  88, 40 )FUV(204,  96, 40 )FUV(205,  104,40 )FUV(206,  112,40 )
+FUV(207,  120,40 )FUV(208,  128,40 )FUV(209,  136,40 )FUV(210,  144,40 )FUV(211,  152,40 )FUV(212,  160,40 )FUV(213,  168,40 )
+FUV(214,  176,40 )FUV(215,  184,40 )FUV(216,  192,40 )FUV(217,  200,40 )FUV(218,  208,40 )FUV(219,  216,40 )FUV(220,  224,40 )
+FUV(221,  232,40 )FUV(222,  240,40 )FUV(223,  248,40 )FUV(224,  0,  48 )FUV(225,  8,  48 )FUV(226,  16, 48 )FUV(227,  24, 48 )
+FUV(228,  32, 48 )FUV(229,  40, 48 )FUV(230,  48, 48 )FUV(231,  56, 48 )FUV(232,  64, 48 )FUV(233,  72, 48 )FUV(234,  80, 48 )
+FUV(235,  88, 48 )FUV(236,  96, 48 )FUV(237,  104,48 )FUV(238,  112,48 )FUV(239,  120,48 )FUV(240,  128,48 )FUV(241,  136,48 )
+FUV(242,  144,48 )FUV(243,  152,48 )FUV(244,  160,48 )FUV(245,  168,48 )FUV(246,  176,48 )FUV(247,  184,48 )FUV(248,  192,48 )
+FUV(249,  200,48 )FUV(250,  208,48 )FUV(251,  216,48 )FUV(252,  224,48 )FUV(253,  232,48 )FUV(254,  240,48 )FUV(255,  248,48 )
+FUV(256,  0,  56 )FUV(257,  8,  56 )FUV(258,  16, 56 )FUV(259,  24, 56 )FUV(260,  32, 56 )FUV(261,  40, 56 )FUV(262,  48, 56 )
+FUV(263,  56, 56 )FUV(264,  64, 56 )FUV(265,  72, 56 )FUV(266,  80, 56 )FUV(267,  88, 56 )FUV(268,  96, 56 )FUV(269,  104,56 )
+FUV(270,  112,56 )FUV(271,  120,56 )FUV(272,  128,56 )FUV(273,  136,56 )FUV(274,  144,56 )FUV(275,  152,56 )FUV(276,  160,56 )
+FUV(277,  168,56 )FUV(278,  176,56 )FUV(279,  184,56 )FUV(280,  192,56 )FUV(281,  200,56 )FUV(282,  208,56 )FUV(283,  216,56 )
+FUV(284,  224,56 )FUV(285,  232,56 )FUV(286,  240,56 )FUV(287,  248,56 )FUV(288,  0,  64 )FUV(289,  8,  64 )FUV(290,  16, 64 )
+FUV(291,  24, 64 )FUV(292,  32, 64 )FUV(293,  40, 64 )FUV(294,  48, 64 )FUV(295,  56, 64 )FUV(296,  64, 64 )FUV(297,  72, 64 )
+FUV(298,  80, 64 )FUV(299,  88, 64 )FUV(300,  96, 64 )FUV(301,  104,64 )FUV(302,  112,64 )FUV(303,  120,64 )FUV(304,  128,64 )
+FUV(305,  136,64 )FUV(306,  144,64 )FUV(307,  152,64 )FUV(308,  160,64 )FUV(309,  168,64 )FUV(310,  176,64 )FUV(311,  184,64 )
+FUV(312,  192,64 )FUV(313,  200,64 )FUV(314,  208,64 )FUV(315,  216,64 )FUV(316,  224,64 )FUV(317,  232,64 )FUV(318,  240,64 )
+FUV(319,  248,64 )FUV(320,  0,  72 )FUV(321,  8,  72 )FUV(322,  16, 72 )FUV(323,  24, 72 )FUV(324,  32, 72 )FUV(325,  40, 72 )
+FUV(326,  48, 72 )FUV(327,  56, 72 )FUV(328,  64, 72 )FUV(329,  72, 72 )FUV(330,  80, 72 )FUV(331,  88, 72 )FUV(332,  96, 72 )
+FUV(333,  104,72 )FUV(334,  112,72 )FUV(335,  120,72 )FUV(336,  128,72 )FUV(337,  136,72 )FUV(338,  144,72 )FUV(339,  152,72 )
+FUV(340,  160,72 )FUV(341,  168,72 )FUV(342,  176,72 )FUV(343,  184,72 )FUV(344,  192,72 )FUV(345,  200,72 )FUV(346,  208,72 )
+FUV(347,  216,72 )FUV(348,  224,72 )FUV(349,  232,72 )FUV(350,  240,72 )FUV(351,  248,72 )FUV(352,  0,  80 )FUV(353,  8,  80 )
+FUV(354,  16, 80 )FUV(355,  24, 80 )FUV(356,  32, 80 )FUV(357,  40, 80 )FUV(358,  48, 80 )FUV(359,  56, 80 )FUV(360,  64, 80 )
+FUV(361,  72, 80 )FUV(362,  80, 80 )FUV(363,  88, 80 )FUV(364,  96, 80 )FUV(365,  104,80 )FUV(366,  112,80 )FUV(367,  120,80 )
+FUV(368,  128,80 )FUV(369,  136,80 )FUV(370,  144,80 )FUV(371,  152,80 )FUV(372,  160,80 )FUV(373,  168,80 )FUV(374,  176,80 )
+FUV(375,  184,80 )FUV(376,  192,80 )FUV(377,  200,80 )FUV(378,  208,80 )FUV(379,  216,80 )FUV(380,  224,80 )FUV(381,  232,80 )
+FUV(382,  240,80 )FUV(383,  248,80 )FUV(402,  0,  88 )FUV(417,  8,  88 )FUV(439,  16, 88 )FUV(506,  24, 88 )FUV(507,  32, 88 )
+FUV(508,  40, 88 )FUV(509,  48, 88 )FUV(510,  56, 88 )FUV(511,  64, 88 )FUV(536,  72, 88 )FUV(537,  80, 88 )FUV(538,  88, 88 )
+FUV(539,  96, 88 )FUV(593,  104,88 )FUV(632,  112,88 )FUV(710,  120,88 )FUV(711,  128,88 )FUV(713,  136,88 )FUV(728,  144,88 )
+FUV(729,  152,88 )FUV(730,  160,88 )FUV(731,  168,88 )FUV(732,  176,88 )FUV(733,  184,88 )FUV(894,  192,88 )FUV(900,  200,88 )
+FUV(901,  208,88 )FUV(902,  216,88 )FUV(903,  224,88 )FUV(904,  232,88 )FUV(905,  240,88 )FUV(906,  248,88 )FUV(908,  0,  96 )
+FUV(910,  8,  96 )FUV(911,  16, 96 )FUV(912,  24, 96 )FUV(913,  32, 96 )FUV(914,  40, 96 )FUV(915,  48, 96 )FUV(916,  56, 96 )
+FUV(917,  64, 96 )FUV(918,  72, 96 )FUV(919,  80, 96 )FUV(920,  88, 96 )FUV(921,  96, 96 )FUV(922,  104,96 )FUV(923,  112,96 )
+FUV(924,  120,96 )FUV(925,  128,96 )FUV(926,  136,96 )FUV(927,  144,96 )FUV(928,  152,96 )FUV(929,  160,96 )FUV(931,  168,96 )
+FUV(932,  176,96 )FUV(933,  184,96 )FUV(934,  192,96 )FUV(935,  200,96 )FUV(936,  208,96 )FUV(937,  216,96 )FUV(938,  224,96 )
+FUV(939,  232,96 )FUV(940,  240,96 )FUV(941,  248,96 )FUV(942,  0,  104)FUV(943,  8,  104)FUV(944,  16, 104)FUV(945,  24, 104)
+FUV(946,  32, 104)FUV(947,  40, 104)FUV(948,  48, 104)FUV(949,  56, 104)FUV(950,  64, 104)FUV(951,  72, 104)FUV(952,  80, 104)
+FUV(953,  88, 104)FUV(954,  96, 104)FUV(955,  104,104)FUV(956,  112,104)FUV(957,  120,104)FUV(958,  128,104)FUV(959,  136,104)
+FUV(960,  144,104)FUV(961,  152,104)FUV(962,  160,104)FUV(963,  168,104)FUV(964,  176,104)FUV(965,  184,104)FUV(966,  192,104)
+FUV(967,  200,104)FUV(968,  208,104)FUV(969,  216,104)FUV(970,  224,104)FUV(971,  232,104)FUV(972,  240,104)FUV(973,  248,104)
+FUV(974,  0,  112)FUV(976,  8,  112)FUV(1012, 16, 112)FUV(1024, 24, 112)FUV(1025, 32, 112)FUV(1026, 40, 112)FUV(1027, 48, 112)
+FUV(1028, 56, 112)FUV(1029, 64, 112)FUV(1030, 72, 112)FUV(1031, 80, 112)FUV(1032, 88, 112)FUV(1033, 96, 112)FUV(1034, 104,112)
+FUV(1035, 112,112)FUV(1036, 120,112)FUV(1037, 128,112)FUV(1038, 136,112)FUV(1039, 144,112)FUV(1040, 152,112)FUV(1041, 160,112)
+FUV(1042, 168,112)FUV(1043, 176,112)FUV(1044, 184,112)FUV(1045, 192,112)FUV(1046, 200,112)FUV(1047, 208,112)FUV(1048, 216,112)
+FUV(1049, 224,112)FUV(1050, 232,112)FUV(1051, 240,112)FUV(1052, 248,112)FUV(1053, 0,  120)FUV(1054, 8,  120)FUV(1055, 16, 120)
+FUV(1056, 24, 120)FUV(1057, 32, 120)FUV(1058, 40, 120)FUV(1059, 48, 120)FUV(1060, 56, 120)FUV(1061, 64, 120)FUV(1062, 72, 120)
+FUV(1063, 80, 120)FUV(1064, 88, 120)FUV(1065, 96, 120)FUV(1066, 104,120)FUV(1067, 112,120)FUV(1068, 120,120)FUV(1069, 128,120)
+FUV(1070, 136,120)FUV(1071, 144,120)FUV(1072, 152,120)FUV(1073, 160,120)FUV(1074, 168,120)FUV(1075, 176,120)FUV(1076, 184,120)
+FUV(1077, 192,120)FUV(1078, 200,120)FUV(1079, 208,120)FUV(1080, 216,120)FUV(1081, 224,120)FUV(1082, 232,120)FUV(1083, 240,120)
+FUV(1084, 248,120)FUV(1085, 0,  128)FUV(1086, 8,  128)FUV(1087, 16, 128)FUV(1088, 24, 128)FUV(1089, 32, 128)FUV(1090, 40, 128)
+FUV(1091, 48, 128)FUV(1092, 56, 128)FUV(1093, 64, 128)FUV(1094, 72, 128)FUV(1095, 80, 128)FUV(1096, 88, 128)FUV(1097, 96, 128)
+FUV(1098, 104,128)FUV(1099, 112,128)FUV(1100, 120,128)FUV(1101, 128,128)FUV(1102, 136,128)FUV(1103, 144,128)FUV(1104, 152,128)
+FUV(1105, 160,128)FUV(1106, 168,128)FUV(1107, 176,128)FUV(1108, 184,128)FUV(1109, 192,128)FUV(1110, 200,128)FUV(1111, 208,128)
+FUV(1112, 216,128)FUV(1113, 224,128)FUV(1114, 232,128)FUV(1115, 240,128)FUV(1116, 248,128)FUV(1117, 0,  136)FUV(1118, 8,  136)
+FUV(1119, 16, 136)FUV(1168, 24, 136)FUV(1169, 32, 136)FUV(1470, 40, 136)FUV(1488, 48, 136)FUV(1489, 56, 136)FUV(1490, 64, 136)
+FUV(1491, 72, 136)FUV(1492, 80, 136)FUV(1493, 88, 136)FUV(1494, 96, 136)FUV(1495, 104,136)FUV(1496, 112,136)FUV(1497, 120,136)
+FUV(1498, 128,136)FUV(1499, 136,136)FUV(1500, 144,136)FUV(1501, 152,136)FUV(1502, 160,136)FUV(1503, 168,136)FUV(1504, 176,136)
+FUV(1505, 184,136)FUV(1506, 192,136)FUV(1507, 200,136)FUV(1508, 208,136)FUV(1509, 216,136)FUV(1510, 224,136)FUV(1511, 232,136)
+FUV(1512, 240,136)FUV(1513, 248,136)FUV(1514, 0,  144)FUV(1520, 8,  144)FUV(1521, 16, 144)FUV(1522, 24, 144)FUV(1523, 32, 144)
+FUV(1524, 40, 144)FUV(7451, 48, 144)FUV(7462, 56, 144)FUV(7464, 64, 144)FUV(7808, 72, 144)FUV(7809, 80, 144)FUV(7810, 88, 144)
+FUV(7811, 96, 144)FUV(7812, 104,144)FUV(7813, 112,144)FUV(7839, 120,144)FUV(7922, 128,144)FUV(7923, 136,144)FUV(8208, 144,144)
+FUV(8210, 152,144)FUV(8211, 160,144)FUV(8212, 168,144)FUV(8213, 176,144)FUV(8215, 184,144)FUV(8216, 192,144)FUV(8217, 200,144)
+FUV(8218, 208,144)FUV(8219, 216,144)FUV(8220, 224,144)FUV(8221, 232,144)FUV(8222, 240,144)FUV(8223, 248,144)FUV(8224, 0,  152)
+FUV(8225, 8,  152)FUV(8226, 16, 152)FUV(8230, 24, 152)FUV(8231, 32, 152)FUV(8240, 40, 152)FUV(8242, 48, 152)FUV(8243, 56, 152)
+FUV(8245, 64, 152)FUV(8249, 72, 152)FUV(8250, 80, 152)FUV(8252, 88, 152)FUV(8254, 96, 152)FUV(8255, 104,152)FUV(8256, 112,152)
+FUV(8260, 120,152)FUV(8276, 128,152)FUV(8308, 136,152)FUV(8309, 144,152)FUV(8310, 152,152)FUV(8311, 160,152)FUV(8312, 168,152)
+FUV(8313, 176,152)FUV(8314, 184,152)FUV(8315, 192,152)FUV(8319, 200,152)FUV(8321, 208,152)FUV(8322, 216,152)FUV(8323, 224,152)
+FUV(8324, 232,152)FUV(8325, 240,152)FUV(8326, 248,152)FUV(8327, 0,  160)FUV(8328, 8,  160)FUV(8329, 16, 160)FUV(8330, 24, 160)
+FUV(8331, 32, 160)FUV(8355, 40, 160)FUV(8356, 48, 160)FUV(8359, 56, 160)FUV(8362, 64, 160)FUV(8364, 72, 160)FUV(8453, 80, 160)
+FUV(8467, 88, 160)FUV(8470, 96, 160)FUV(8482, 104,160)FUV(8486, 112,160)FUV(8494, 120,160)FUV(8528, 128,160)FUV(8529, 136,160)
+FUV(8531, 144,160)FUV(8532, 152,160)FUV(8533, 160,160)FUV(8534, 168,160)FUV(8535, 176,160)FUV(8536, 184,160)FUV(8537, 192,160)
+FUV(8538, 200,160)FUV(8539, 208,160)FUV(8540, 216,160)FUV(8541, 224,160)FUV(8542, 232,160)FUV(8592, 240,160)FUV(8593, 248,160)
+FUV(8594, 0,  168)FUV(8595, 8,  168)FUV(8596, 16, 168)FUV(8597, 24, 168)FUV(8616, 32, 168)FUV(8706, 40, 168)FUV(8709, 48, 168)
+FUV(8710, 56, 168)FUV(8712, 64, 168)FUV(8719, 72, 168)FUV(8721, 80, 168)FUV(8722, 88, 168)FUV(8725, 96, 168)FUV(8729, 104,168)
+FUV(8730, 112,168)FUV(8734, 120,168)FUV(8735, 128,168)FUV(8745, 136,168)FUV(8747, 144,168)FUV(8776, 152,168)FUV(8800, 160,168)
+FUV(8801, 168,168)FUV(8804, 176,168)FUV(8805, 184,168)FUV(8857, 192,168)FUV(8960, 200,168)FUV(8962, 208,168)FUV(8976, 216,168)
+FUV(8992, 224,168)FUV(8993, 232,168)FUV(9472, 240,168)FUV(9474, 248,168)FUV(9484, 0,  176)FUV(9488, 8,  176)FUV(9492, 16, 176)
+FUV(9496, 24, 176)FUV(9500, 32, 176)FUV(9508, 40, 176)FUV(9516, 48, 176)FUV(9524, 56, 176)FUV(9532, 64, 176)FUV(9552, 72, 176)
+FUV(9553, 80, 176)FUV(9554, 88, 176)FUV(9555, 96, 176)FUV(9556, 104,176)FUV(9557, 112,176)FUV(9558, 120,176)FUV(9559, 128,176)
+FUV(9560, 136,176)FUV(9561, 144,176)FUV(9562, 152,176)FUV(9563, 160,176)FUV(9564, 168,176)FUV(9565, 176,176)FUV(9566, 184,176)
+FUV(9567, 192,176)FUV(9568, 200,176)FUV(9569, 208,176)FUV(9570, 216,176)FUV(9571, 224,176)FUV(9572, 232,176)FUV(9573, 240,176)
+FUV(9574, 248,176)FUV(9575, 0,  184)FUV(9576, 8,  184)FUV(9577, 16, 184)FUV(9578, 24, 184)FUV(9579, 32, 184)FUV(9580, 40, 184)
+FUV(9600, 48, 184)FUV(9601, 56, 184)FUV(9604, 64, 184)FUV(9608, 72, 184)FUV(9612, 80, 184)FUV(9616, 88, 184)FUV(9617, 96, 184)
+FUV(9618, 104,184)FUV(9619, 112,184)FUV(9632, 120,184)FUV(9633, 128,184)FUV(9642, 136,184)FUV(9643, 144,184)FUV(9644, 152,184)
+FUV(9650, 160,184)FUV(9658, 168,184)FUV(9660, 176,184)FUV(9668, 184,184)FUV(9674, 192,184)FUV(9675, 200,184)FUV(9679, 208,184)
+FUV(9688, 216,184)FUV(9689, 224,184)FUV(9702, 232,184)FUV(9786, 240,184)FUV(9787, 248,184)FUV(9788, 0,  192)FUV(9792, 8,  192)
+FUV(9794, 16, 192)FUV(9824, 24, 192)FUV(9827, 32, 192)FUV(9829, 40, 192)FUV(9830, 48, 192)FUV(9834, 56, 192)FUV(9835, 64, 192)
+FUV(10003,72, 192)FUV(64257,80, 192)FUV(64258,88, 192)FUV(65533,96, 192) default: *x = 96; *y = 192; break;	} }
 
 class olcSprite
 {
