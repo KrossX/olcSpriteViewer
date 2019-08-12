@@ -385,14 +385,15 @@ void piece_land(void)
 		lines_cleared += lines;
 		
 		if(lines_cleared/5 > user_level) {
+			if(user_level ==  9) play_music(BGM_TRACK2);
+			if(user_level == 19) play_music(BGM_TRACK3);
+
 			play_sound(SND_LEVELUP);
 			levelup_animation = 0.5;
 		}
 
 		user_level = lines_cleared/5;
 		
-		if(user_level == 10) play_music(BGM_TRACK2);
-		if(user_level == 20) play_music(BGM_TRACK3);
 	} else {
 		next_piece();
 		update_ghost();
