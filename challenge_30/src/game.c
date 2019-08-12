@@ -344,6 +344,7 @@ void piece_land(void)
 		ZeroMemory(tgrid, sizeof(tgrid));
 		next_piece();
 		update_ghost();
+		play_music(BGM_TRACK1);
 		return;
 	}
 	
@@ -407,14 +408,12 @@ void game_step(void)
 	double delay = (10.0 - user_level * 0.4) * 0.1;
 	if(delay < 0.1) delay = 0.1;
 	
+	dt += time_diff;
+
 	if(line_animation <= 0 && line_gravity) {
 		line_gravity = 0;
 		gravity();
-	}
-	
-	dt += time_diff;
-	
-	if(dt >= delay) {	
+	} else  if(dt >= delay) {
 		dt -= delay;
 		pcur.posy--;
 		
