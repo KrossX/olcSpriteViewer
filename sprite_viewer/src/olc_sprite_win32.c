@@ -38,7 +38,7 @@ typedef __int16  s16;
 typedef __int32  s32;
 typedef __int64  s64;
 
-typedef BOOL  (WINAPI wglSwapInterval_t) (int interval);
+typedef BOOL (WINAPI wglSwapInterval_t) (int interval);
 wglSwapInterval_t *wglSwapInterval;
 
 //==============================================================================
@@ -698,7 +698,6 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, char *cmdline, int cmdshow)
 {
 	HWND wnd;
 	MSG msg;
-	int not_quit = 1;
 
 	if(cmdline[0])
 	{
@@ -757,42 +756,45 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, char *cmdline, int cmdshow)
 	glAlphaFunc(GL_GREATER, 0.0f);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	while(not_quit)
+	while(1)
 	{
-		update_time();
-		
-		glClear(GL_COLOR_BUFFER_BIT);
-		
-		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 			
-			not_quit = msg.message != WM_QUIT;
+			if(msg.message == WM_QUIT)
+				break;
 		}
-		
-		if(main_sprite.loaded)
+		else
 		{
-			draw_sprite(&main_sprite);
-			draw_segment(&main_sprite);
-			draw_infobar(&main_sprite);
-		}
-		
-		if(edit_mode)
-		{
-			if(edit_update_texture)
+			update_time();
+			
+			glClear(GL_COLOR_BUFFER_BIT);
+			
+			if(main_sprite.loaded)
 			{
-				update_sprite_texture();
-				edit_update_texture = 0;
+				draw_sprite(&main_sprite);
+				draw_segment(&main_sprite);
+				draw_infobar(&main_sprite);
 			}
 			
-			draw_editor(&edit_pixel);
+			if(edit_mode)
+			{
+				if(edit_update_texture)
+				{
+					update_sprite_texture();
+					edit_update_texture = 0;
+				}
+				
+				draw_editor(&edit_pixel);
 
-			if(edit_palette)
-				draw_editor_palette(&edit_pixel);
+				if(edit_palette)
+					draw_editor_palette(&edit_pixel);
+			}
+			
+			SwapBuffers(dev_ctx);
 		}
-		
-		SwapBuffers(dev_ctx);
 	}
 
 	
